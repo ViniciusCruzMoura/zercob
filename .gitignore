@@ -7,12 +7,7 @@ config.json
 #Ctags
 tags
 
-# Django Settings
-#core/settings.py
-
-# Docker
-#docker-compose.yml
-#Dockerfile
+staticfiles/
 
 # Django #
 *.log
@@ -20,55 +15,56 @@ tags
 *.pyc
 __pycache__
 db.sqlite3
+db.sqlite3.*
+*.sql.*
 media
-files
 
-# Backup files
+# Backup files # 
 *.bak 
 *.swp
 
-# If you are u
-# User-specifi
-.idea/**/works
-.idea/**/tasks
-.idea/**/usage
-.idea/**/dicti
+# If you are using PyCharm # 
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
 .idea/**/shelf
 
-# AWS User-spe
-.idea/**/aws.x
+# AWS User-specific
+.idea/**/aws.xml
 
-# Generated fi
-.idea/**/conte
+# Generated files
+.idea/**/contentModel.xml
 
-# Sensitive or
-.idea/**/dataS
-.idea/**/dataS
-.idea/**/dataS
-.idea/**/sqlDa
-.idea/**/dynam
-.idea/**/uiDes
-.idea/**/dbnav
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
 
 # Gradle
-.idea/**/gradl
-.idea/**/libra
+.idea/**/gradle.xml
+.idea/**/libraries
 
-# File-based p
+# File-based project format
 *.iws
 
 # IntelliJ
 out/
 
 # JIRA plugin
-atlassian-ide-
+atlassian-ide-plugin.xml
 
 # Python # 
 *.py[cod] 
 *$py.class 
 
-# Distribution
-.Python build/
+# Distribution / packaging 
+.Python build/ 
 develop-eggs/ 
 dist/ 
 downloads/ 
@@ -81,40 +77,40 @@ sdist/
 var/ 
 wheels/ 
 *.egg-info/ 
-.installed.cfg
+.installed.cfg 
 *.egg 
 *.manifest 
 *.spec 
 
-# Installer lo
+# Installer logs 
 pip-log.txt 
-pip-delete-thi
+pip-delete-this-directory.txt 
 
-# Unit test / 
+# Unit test / coverage reports 
 htmlcov/ 
 .tox/ 
 .coverage 
 .coverage.* 
 .cache 
-.pytest_cache/
+.pytest_cache/ 
 nosetests.xml 
 coverage.xml 
 *.cover 
 .hypothesis/ 
 
-# Jupyter Note
-.ipynb_checkpo
+# Jupyter Notebook 
+.ipynb_checkpoints 
 
 # pyenv 
-.python-versio
+.python-version 
 
 # celery 
-celerybeat-sch
+celerybeat-schedule.* 
 
-# SageMath par
+# SageMath parsed files 
 *.sage.py 
 
-# Environments
+# Environments 
 .env 
 .venv 
 env/ 
@@ -123,88 +119,34 @@ ENV/
 env.bak/ 
 venv.bak/ 
 
-# mkdocs docum
+# mkdocs documentation 
 /site 
 
 # mypy 
 .mypy_cache/ 
 
-# Sublime Text
-*.tmlanguage.c
-*.tmPreference
-*.stTheme.cach
-*.sublime-work
-*.sublime-proj
+# Sublime Text # 
+*.tmlanguage.cache 
+*.tmPreferences.cache 
+*.stTheme.cache 
+*.sublime-workspace 
+*.sublime-project 
 
-# sftp configu
-sftp-config.js
+# sftp configuration file 
+sftp-config.json 
 
-# Package cont
-Control.last-r
-Control.ca-lis
-Control.ca-bun
-Control.system
-GitHub.sublime
+# Package control specific files Package 
+Control.last-run 
+Control.ca-list 
+Control.ca-bundle 
+Control.system-ca-bundle 
+GitHub.sublime-settings 
 
-# Visual Studi
+# Visual Studio Code # 
 .vscode
 .vscode/* 
-!.vscode/setti
-!.vscode/tasks
-!.vscode/launc
-!.vscode/exten
+!.vscode/settings.json 
+!.vscode/tasks.json 
+!.vscode/launch.json 
+!.vscode/extensions.json 
 .history
-
-
-/target/
-!.mvn/wrapper/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ I
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans #
-/nbproject/pri
-/build/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-.classpath
-.project
-.settings/
-target/target/
-classes/
-.idea/
-.mvn/
-.idea/
-
-
-out/production
-bin/
-out/
-target/
-bin/
-
-
-out/production
-bin/
-out/
-out
-
-
-/staticfiles/
-static/
-staticfiles/

@@ -56,10 +56,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+#     'rest_framework',
+#     'post_office',
     'import_export',
     'celery',
     'django_celery_beat',
     'django_celery_results',
+    'auditlog',
     'apps.user_admin',
     'apps.cobranca',
 ]
