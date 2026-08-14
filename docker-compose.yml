@@ -1,0 +1,30 @@
+name: 'sebrae'
+services:
+  web:
+    restart: always
+    image: sebrae_integracoes:latest
+    build: .
+    ports:
+      - 8183:8000
+    environment:
+      - CONFIG_SAS_X_REQ=${CONFIG_SAS_X_REQ}
+      - CONFIG_PLIQ_TOKEN=${CONFIG_PLIQ_TOKEN}
+      - CONFIG_SALESFORCE_CLIENT_ID=${CONFIG_SALESFORCE_CLIENT_ID}
+      - CONFIG_SALESFORCE_CLIENT_SECRET=${CONFIG_SALESFORCE_CLIENT_SECRET}
+      - CONFIG_SALESFORCE_DOMAIN=${CONFIG_SALESFORCE_DOMAIN}
+      - CONFIG_SAS_DOMAIN=${CONFIG_SAS_DOMAIN}
+      - CONFIG_PLIQ_DOMAIN=${CONFIG_PLIQ_DOMAIN}
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+    depends_on:
+      - redis
+  redis:
+    restart: always
+    image: redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 32M

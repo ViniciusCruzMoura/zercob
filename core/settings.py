@@ -1,0 +1,387 @@
+from pathlib import Path
+import os
+from decouple import config
+
+FLAG_PLIQ_ENABLED = True
+
+CONFIG_REDIS_URL = config("CONFIG_REDIS_URL", "")
+CONFIG_CSRF_TRUSTED_ORIGINS = config("CONFIG_CSRF_TRUSTED_ORIGINS", "")
+CONFIG_DATABASE_ENGINE = config("CONFIG_DATABASE_ENGINE", "sqlite")
+CONFIG_DATABASE_HOSTNAME = config("CONFIG_DATABASE_HOSTNAME", None)
+CONFIG_DATABASE_PORT = config("CONFIG_DATABASE_PORT", None)
+CONFIG_DATABASE_NAME = config("CONFIG_DATABASE_NAME", None)
+CONFIG_DATABASE_USER = config("CONFIG_DATABASE_USER", None)
+CONFIG_DATABASE_PASSWD = config("CONFIG_DATABASE_PASSWD", None)
+
+SAS_X_REQ = config("CONFIG_SAS_X_REQ", None)
+PLIQ_TOKEN = config("CONFIG_PLIQ_TOKEN", None)
+SALESFORCE_CLIENT_ID = config("CONFIG_SALESFORCE_CLIENT_ID", None) 
+SALESFORCE_CLIENT_SECRET = config("CONFIG_SALESFORCE_CLIENT_SECRET", None)
+SALESFORCE_DOMAIN = config("CONFIG_SALESFORCE_DOMAIN", None)
+SAS_DOMAIN = config("CONFIG_SAS_DOMAIN", None)
+PLIQ_DOMAIN = config("CONFIG_PLIQ_DOMAIN", None)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SECRET_KEY = 'django-insecure-o&cp!1mjza263%zb)nk2q()cwnj7tw&9=bvyp)mkg34z@lvaf('
+DEBUG = True
+ASSETS_ROOT = "/static/assets"
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000", "http://lgpd.sebrae.ideiiatech.com.br"]
+if CONFIG_CSRF_TRUSTED_ORIGINS:
+    for domain in CONFIG_CSRF_TRUSTED_ORIGINS.split(","):
+        if not domain.startswith(("http://", "https://")):
+            print(f"Warning: Invalid domain format - {domain}. Skipping.")
+            continue
+        CSRF_TRUSTED_ORIGINS.append(domain)
+CORS_ALLOW_ALL_ORIGINS = True
+X_FRAME_OPTIONS = "SAMEORIGIN"
+INSTALLED_APPS = [
+    "unfold",  # before django.contrib.admin
+    "unfold.contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    "unfold.contrib.simple_history",  # optional, if django-simple-history package is used
+    "unfold.contrib.location_field",  # optional, if django-location-field package is used
+    "unfold.contrib.constance",  # optional, if django-constance package is used
+    "unfold.contrib.hijack",  # optional, if django-hijack package is used
+#     'django_daisy',
+    'django.contrib.humanize',  # Required for django-daisy
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'import_export',
+    'celery',
+    'django_celery_beat',
+    'django_celery_results',
+    'apps.lgpd',
+    'apps.user_admin',
+    'apps.cobranca',
+]
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+ROOT_URLCONF = 'core.urls'
+LOGIN_REDIRECT_URL = "admin:index"
+LOGOUT_REDIRECT_URL = "admin:login"
+TEMPLATE_DIR = os.path.join(CORE_DIR, "templates")
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        "DIRS": [TEMPLATE_DIR],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+WSGI_APPLICATION = 'core.wsgi.application'
+DATABASES = {}
+if CONFIG_DATABASE_USER and CONFIG_DATABASE_PASSWD:
+    if CONFIG_DATABASE_ENGINE.upper() == "ORACLE":
+        DATABASES.update({
+            "default": {
+                'ENGINE': 'django.db.backends.oracle',
+                'OPTIONS': {
+                    'pool': {"min": 1, "max": 400, "increment": 1, "cclass": "cc1"}
+                    },
+                'NAME': f'{CONFIG_DATABASE_HOSTNAME}:{CONFIG_DATABASE_PORT}/{CONFIG_DATABASE_NAME}',
+                'USER': f'{CONFIG_DATABASE_USER}',
+                'PASSWORD': f'{CONFIG_DATABASE_PASSWD}',
+                },
+            })
+    elif CONFIG_DATABASE_ENGINE.upper() == "POSTGRES":
+        DATABASES.update(
+            {
+                "default": {
+                    "OPTIONS": {"options": "-c search_path=public"},
+                    "ENGINE": "django.db.backends.postgresql_psycopg2",
+                    "NAME": f"{CONFIG_DATABASE_NAME}",
+                    "USER": f"{CONFIG_DATABASE_USER}",
+                    "PASSWORD": f"{CONFIG_DATABASE_PASSWD}",
+                    "HOST": f"{CONFIG_DATABASE_HOSTNAME}",
+                    "PORT": f"{CONFIG_DATABASE_PORT}",
+                },
+            }
+        )
+else:
+    if CONFIG_DATABASE_ENGINE.upper() == "SQLITE":
+        DATABASES.update(
+            {
+                "default": {
+                    "ENGINE": "django.db.backends.sqlite3",
+                    "NAME": BASE_DIR / "db.sqlite3",
+                }
+            }
+        )
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Campo_Grande"
+
+USE_I18N = True
+USE_L10N = True
+USE_TZ = False
+
+MEDIA_ROOT = os.path.join(CORE_DIR, "media")
+
+MEDIA_URL = "/media/"
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
+
+STATIC_ROOT = os.path.join(CORE_DIR, "staticfiles")
+STATIC_URL = '/static/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DAISY_SETTINGS = {
+    'DEFAULT_THEME': 'light',    
+    'SHOW_THEME_SELECTOR': False,    
+    'SITE_TITLE': 'Sebrae LGPD',  
+    'SITE_HEADER': 'Termo de Consentimento (LGPD)',  
+    'INDEX_TITLE': 'Hi, welcome to your dashboard',  
+    'SITE_LOGO': '/static/admin/img/sebrae-blue.svg',  
+    'EXTRA_STYLES': [],  
+    'EXTRA_SCRIPTS': [],  
+    'LOAD_FULL_STYLES': False,  
+    'SHOW_CHANGELIST_FILTER': False,  
+    'DONT_SUPPORT_ME': True, 
+    'SIDEBAR_FOOTNOTE': 'Acto', 
+    'APPS_REORDER': {
+        'auth': {
+            'icon': 'fa-solid fa-person-military-pointing',  
+            'name': 'Autenticação',  
+            'hide': False,  
+            'divider_title': "Auth",  
+        },
+        'social_django': {
+            'icon': 'fa-solid fa-users-gear',  
+        },
+        'django_celery_beat': {
+            'icon': 'fa-solid fa-users-gear',  
+            'name': 'Tarefas',  
+            'hide': False,  
+            'divider_title': "Agendador",  
+        },
+        'django_celery_results': {
+            'icon': 'fa fa-building-un',
+            'name': 'Execuções',
+            'hide': False,
+        },
+    },
+}
+
+CELERY_TASK_TIME_LIMIT = 10
+CELERY_TASK_SOFT_TIME_LIMIT = 10
+CELERY_TIMEZONE = "America/Campo_Grande"
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+CELERY_RESULT_BACKEND = 'django-db'
+if CONFIG_REDIS_URL:
+    CELERY_BROKER_URL = f'redis://{CONFIG_REDIS_URL}:6379/0'
+else:
+    CELERY_BROKER_URL = 'redis://localhost:6379/1'
+
+
+
+
+
+from django.templatetags.static import static
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+
+UNFOLD = {
+    "SITE_TITLE": "Custom suffix in <title> tag",
+    "SITE_HEADER": "Appears in sidebar at the top",
+    "SITE_SUBHEADER": "Appears under SITE_HEADER",
+    "SITE_VERSION": "0.1.0",
+    "SITE_DROPDOWN": [
+        {
+            "icon": "diamond",
+            "title": _("My site"),
+            "link": "https://example.com",
+        },
+    ],
+    "SITE_URL": "/",
+#     "SITE_VIEWS": [
+#         ("some-path-to-view", "name_of_view_1", "path.to.view_itself_1"),
+#         ("other-path-to-view", "another_name_of_view_2", "path.to.view_itself_2"),
+#     ],
+    # "SITE_ICON": lambda request: static("icon.svg"),  # both modes, optimise for 32px height
+    "SITE_ICON": {
+        "light": lambda request: static("icon-light.svg"),  # light mode
+        "dark": lambda request: static("icon-dark.svg"),  # dark mode
+    },
+    # "SITE_LOGO": lambda request: static("logo.svg"),  # both modes, optimise for 32px height
+    "SITE_LOGO": {
+        "light": lambda request: static("logo-light.svg"),  # light mode
+        "dark": lambda request: static("logo-dark.svg"),  # dark mode
+    },
+    "SITE_SYMBOL": "speed",  # symbol from icon set
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "href": lambda request: static("favicon.svg"),
+        },
+    ],
+    "SHOW_HISTORY": True, # show/hide "History" button, default: True
+    "SHOW_VIEW_ON_SITE": True, # show/hide "View on site" button, default: True
+    "SHOW_BACK_BUTTON": False, # show/hide "Back" button on changeform in header, default: False
+    "SHOW_UI_WARNINGS": False, # show/hide warnings in UI, default: False
+#     "ENVIRONMENT": "sample_app.environment_callback", # environment name in header
+#     "ENVIRONMENT_TITLE_PREFIX": "sample_app.environment_title_prefix_callback", # environment name prefix in title tag
+#     "DASHBOARD_CALLBACK": "sample_app.dashboard_callback",
+    "THEME": "light", # Force theme: "dark" or "light". Will disable theme switcher
+#     "LOGIN": {
+#         "image": lambda request: static("sample/login-bg.jpg"),
+#         "redirect_after": lambda request: reverse_lazy("admin:APP_MODEL_changelist"),
+#         # Inherits from `unfold.forms.AuthenticationForm`
+#         "form": "app.forms.CustomLoginForm",
+#     },
+    "STYLES": [
+        lambda request: static("css/style.css"),
+    ],
+    "SCRIPTS": [
+        lambda request: static("js/script.js"),
+    ],
+    "BORDER_RADIUS": "6px",
+    "COLORS": {
+        "base": {
+            "50": "oklch(98.5% .002 247.839)",
+            "100": "oklch(96.7% .003 264.542)",
+            "200": "oklch(92.8% .006 264.531)",
+            "300": "oklch(87.2% .01 258.338)",
+            "400": "oklch(70.7% .022 261.325)",
+            "500": "oklch(55.1% .027 264.364)",
+            "600": "oklch(44.6% .03 256.802)",
+            "700": "oklch(37.3% .034 259.733)",
+            "800": "oklch(27.8% .033 256.848)",
+            "900": "oklch(21% .034 264.665)",
+            "950": "oklch(13% .028 261.692)",
+        },
+        "primary": {
+            "50": "oklch(97.7% .014 308.299)",
+            "100": "oklch(94.6% .033 307.174)",
+            "200": "oklch(90.2% .063 306.703)",
+            "300": "oklch(82.7% .119 306.383)",
+            "400": "oklch(71.4% .203 305.504)",
+            "500": "oklch(62.7% .265 303.9)",
+            "600": "oklch(55.8% .288 302.321)",
+            "700": "oklch(49.6% .265 301.924)",
+            "800": "oklch(43.8% .218 303.724)",
+            "900": "oklch(38.1% .176 304.987)",
+            "950": "oklch(29.1% .149 302.717)",
+        },
+        "font": {
+            "subtle-light": "var(--color-base-500)",  # text-base-500
+            "subtle-dark": "var(--color-base-400)",  # text-base-400
+            "default-light": "var(--color-base-600)",  # text-base-600
+            "default-dark": "var(--color-base-300)",  # text-base-300
+            "important-light": "var(--color-base-900)",  # text-base-900
+            "important-dark": "var(--color-base-100)",  # text-base-100
+        },
+    },
+#     "SIDEBAR": {
+#         "show_search": False,  # Search in applications and models names
+#         "show_all_applications": False,  # Dropdown with all applications and models
+#         "navigation": [
+#             {
+#                 "title": _("Navigation"),
+#                 "separator": True,  # Top border
+#                 "collapsible": True,  # Collapsible group of links
+#                 "items": [
+#                     {
+#                         "title": _("Dashboard"),
+#                         "icon": "dashboard",  # Supported icon set: https://fonts.google.com/icons
+#                         "icon_template": "helpers/icon/dashboard.svg",
+#                         "link": reverse_lazy("admin:index"),
+#                         "link_attrs": {
+#                             "title": "Example title",
+#                             "target": "_blank",
+#                         },
+#                         "badge": "sample_app.badge_callback",
+#                         "badge_variant": "info", # info, success, warning, primary, danger
+#                         "badge_style": "solid", # background fill style
+#                         "badge_class": "ml-auto", # additional class for badge
+#                         "permission": lambda request: request.user.is_superuser,
+#                     },
+#                     {
+#                         "title": _("Users"),
+#                         "icon": "people",
+#                         "link": reverse_lazy("admin:auth_user_changelist"),
+#                     },
+#                 ],
+#             },
+#         ],
+#     },
+#     "TABS": [
+#         {
+#             "models": [
+#                 "app_label.model_name_in_lowercase",
+#             ],
+#             "items": [
+#                 {
+#                     "title": _("Your custom title"),
+#                     "link": reverse_lazy("admin:app_label_model_name_changelist"),
+#                     "permission": "sample_app.permission_callback",
+#                 },
+#             ],
+#         },
+#     ],
+}
+
+
+def dashboard_callback(request, context):
+    """
+    Callback to prepare custom variables for index template which is used as dashboard
+    template. It can be overridden in application by creating custom admin/index.html.
+    """
+    context.update(
+        {
+            "sample": "example",  # this will be injected into templates/admin/index.html
+        }
+    )
+    return context
+
+
+def environment_callback(request):
+    """
+    Callback has to return a list of two values represeting text value and the color
+    type of the label displayed in top right corner.
+    """
+    return ["Production", "danger"] # info, danger, warning, success
+
+
+def badge_callback(request):
+    return 3
+
+def permission_callback(request):
+    return request.user.has_perm("sample_app.change_model")

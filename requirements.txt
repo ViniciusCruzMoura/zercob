@@ -1,0 +1,11 @@
+django==5.2
+requests
+gunicorn
+python-decouple
+oracledb
+psycopg2-binary
+celery
+redis
+django-celery-results
+django_celery_beat
+django-timezone-field
