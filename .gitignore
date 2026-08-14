@@ -1,0 +1,210 @@
+*.rar
+*.csv
+*.xlsx
+*.pdf
+config.json
+
+#Ctags
+tags
+
+# Django Settings
+#core/settings.py
+
+# Docker
+#docker-compose.yml
+#Dockerfile
+
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+files
+
+# Backup files
+*.bak 
+*.swp
+
+# If you are u
+# User-specifi
+.idea/**/works
+.idea/**/tasks
+.idea/**/usage
+.idea/**/dicti
+.idea/**/shelf
+
+# AWS User-spe
+.idea/**/aws.x
+
+# Generated fi
+.idea/**/conte
+
+# Sensitive or
+.idea/**/dataS
+.idea/**/dataS
+.idea/**/dataS
+.idea/**/sqlDa
+.idea/**/dynam
+.idea/**/uiDes
+.idea/**/dbnav
+
+# Gradle
+.idea/**/gradl
+.idea/**/libra
+
+# File-based p
+*.iws
+
+# IntelliJ
+out/
+
+# JIRA plugin
+atlassian-ide-
+
+# Python # 
+*.py[cod] 
+*$py.class 
+
+# Distribution
+.Python build/
+develop-eggs/ 
+dist/ 
+downloads/ 
+eggs/ 
+.eggs/ 
+lib/ 
+lib64/ 
+parts/ 
+sdist/ 
+var/ 
+wheels/ 
+*.egg-info/ 
+.installed.cfg
+*.egg 
+*.manifest 
+*.spec 
+
+# Installer lo
+pip-log.txt 
+pip-delete-thi
+
+# Unit test / 
+htmlcov/ 
+.tox/ 
+.coverage 
+.coverage.* 
+.cache 
+.pytest_cache/
+nosetests.xml 
+coverage.xml 
+*.cover 
+.hypothesis/ 
+
+# Jupyter Note
+.ipynb_checkpo
+
+# pyenv 
+.python-versio
+
+# celery 
+celerybeat-sch
+
+# SageMath par
+*.sage.py 
+
+# Environments
+.env 
+.venv 
+env/ 
+venv/ 
+ENV/ 
+env.bak/ 
+venv.bak/ 
+
+# mkdocs docum
+/site 
+
+# mypy 
+.mypy_cache/ 
+
+# Sublime Text
+*.tmlanguage.c
+*.tmPreference
+*.stTheme.cach
+*.sublime-work
+*.sublime-proj
+
+# sftp configu
+sftp-config.js
+
+# Package cont
+Control.last-r
+Control.ca-lis
+Control.ca-bun
+Control.system
+GitHub.sublime
+
+# Visual Studi
+.vscode
+.vscode/* 
+!.vscode/setti
+!.vscode/tasks
+!.vscode/launc
+!.vscode/exten
+.history
+
+
+/target/
+!.mvn/wrapper/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ I
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans #
+/nbproject/pri
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+.classpath
+.project
+.settings/
+target/target/
+classes/
+.idea/
+.mvn/
+.idea/
+
+
+out/production
+bin/
+out/
+target/
+bin/
+
+
+out/production
+bin/
+out/
+out
+
+
+/staticfiles/
+static/
+staticfiles/
