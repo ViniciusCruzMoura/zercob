@@ -1,11 +1,13 @@
 from pathlib import Path
 import os
 from decouple import config
+from import_export.formats.base_formats import XLSX, CSV
 
-FLAG_PLIQ_ENABLED = True
+CONFIG_ENVIRONMENT = config("CONFIG_ENVIRONMENT", default="PROD").upper()
+CONFIG_DEBUG = config("CONFIG_DEBUG", default="True")
+CONFIG_ALLOWED_HOSTS = config("CONFIG_ALLOWED_HOSTS", default="*")
+CONFIG_CSRF_TRUSTED_ORIGINS = config('CONFIG_CSRF_TRUSTED_ORIGINS', default='http://127.0.0.1:8000')
 
-CONFIG_REDIS_URL = config("CONFIG_REDIS_URL", "")
-CONFIG_CSRF_TRUSTED_ORIGINS = config("CONFIG_CSRF_TRUSTED_ORIGINS", "")
 CONFIG_DATABASE_ENGINE = config("CONFIG_DATABASE_ENGINE", "sqlite")
 CONFIG_DATABASE_HOSTNAME = config("CONFIG_DATABASE_HOSTNAME", None)
 CONFIG_DATABASE_PORT = config("CONFIG_DATABASE_PORT", None)
@@ -13,21 +15,21 @@ CONFIG_DATABASE_NAME = config("CONFIG_DATABASE_NAME", None)
 CONFIG_DATABASE_USER = config("CONFIG_DATABASE_USER", None)
 CONFIG_DATABASE_PASSWD = config("CONFIG_DATABASE_PASSWD", None)
 
-SAS_X_REQ = config("CONFIG_SAS_X_REQ", None)
-PLIQ_TOKEN = config("CONFIG_PLIQ_TOKEN", None)
-SALESFORCE_CLIENT_ID = config("CONFIG_SALESFORCE_CLIENT_ID", None) 
-SALESFORCE_CLIENT_SECRET = config("CONFIG_SALESFORCE_CLIENT_SECRET", None)
-SALESFORCE_DOMAIN = config("CONFIG_SALESFORCE_DOMAIN", None)
-SAS_DOMAIN = config("CONFIG_SAS_DOMAIN", None)
-PLIQ_DOMAIN = config("CONFIG_PLIQ_DOMAIN", None)
+CONFIG_REDIS_URL = config("CONFIG_REDIS_URL", "")
+
+CONFIG_DROPBOX_APP_KEY = config("CONFIG_DROPBOX_APP_KEY", None)
+CONFIG_DROPBOX_APP_SECRET = config("CONFIG_DROPBOX_APP_SECRET", None)
+CONFIG_DROPBOX_REFRESH_TOKEN = config("CONFIG_DROPBOX_REFRESH_TOKEN", None)
+CONFIG_DROPBOX_INTEGRATION_ENABLED = config("CONFIG_DROPBOX_INTEGRATION_ENABLED", "True") == 'True'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'django-insecure-o&cp!1mjza263%zb)nk2q()cwnj7tw&9=bvyp)mkg34z@lvaf('
-DEBUG = True
+DEBUG = CONFIG_DEBUG == 'True'
+IS_PRODUCTION = "PROD" in CONFIG_ENVIRONMENT
 ASSETS_ROOT = "/static/assets"
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000", "http://lgpd.sebrae.ideiiatech.com.br"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", CONFIG_ALLOWED_HOSTS]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
 if CONFIG_CSRF_TRUSTED_ORIGINS:
     for domain in CONFIG_CSRF_TRUSTED_ORIGINS.split(","):
         if not domain.startswith(("http://", "https://")):
@@ -47,7 +49,6 @@ INSTALLED_APPS = [
     "unfold.contrib.location_field",  # optional, if django-location-field package is used
     "unfold.contrib.constance",  # optional, if django-constance package is used
     "unfold.contrib.hijack",  # optional, if django-hijack package is used
-#     'django_daisy',
     'django.contrib.humanize',  # Required for django-daisy
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,7 +60,6 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_beat',
     'django_celery_results',
-    'apps.lgpd',
     'apps.user_admin',
     'apps.cobranca',
 ]
@@ -145,64 +145,27 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Campo_Grande"
-
 USE_I18N = True
 USE_L10N = True
 USE_TZ = False
-
+NAMESPACE = 'zercob' if IS_PRODUCTION else 'zercob/hml'
+STATIC_URL = NAMESPACE+'/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+MEDIA_URL = NAMESPACE+'/media/'
 MEDIA_ROOT = os.path.join(CORE_DIR, "media")
-
-MEDIA_URL = "/media/"
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
-
-STATIC_ROOT = os.path.join(CORE_DIR, "staticfiles")
-STATIC_URL = '/static/'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DAISY_SETTINGS = {
-    'DEFAULT_THEME': 'light',    
-    'SHOW_THEME_SELECTOR': False,    
-    'SITE_TITLE': 'Sebrae LGPD',  
-    'SITE_HEADER': 'Termo de Consentimento (LGPD)',  
-    'INDEX_TITLE': 'Hi, welcome to your dashboard',  
-    'SITE_LOGO': '/static/admin/img/sebrae-blue.svg',  
-    'EXTRA_STYLES': [],  
-    'EXTRA_SCRIPTS': [],  
-    'LOAD_FULL_STYLES': False,  
-    'SHOW_CHANGELIST_FILTER': False,  
-    'DONT_SUPPORT_ME': True, 
-    'SIDEBAR_FOOTNOTE': 'Acto', 
-    'APPS_REORDER': {
-        'auth': {
-            'icon': 'fa-solid fa-person-military-pointing',  
-            'name': 'Autenticação',  
-            'hide': False,  
-            'divider_title': "Auth",  
-        },
-        'social_django': {
-            'icon': 'fa-solid fa-users-gear',  
-        },
-        'django_celery_beat': {
-            'icon': 'fa-solid fa-users-gear',  
-            'name': 'Tarefas',  
-            'hide': False,  
-            'divider_title': "Agendador",  
-        },
-        'django_celery_results': {
-            'icon': 'fa fa-building-un',
-            'name': 'Execuções',
-            'hide': False,
-        },
-    },
-}
+# 'SITE_LOGO': '/static/admin/img/sebrae-blue.svg',  
 
 CELERY_TASK_TIME_LIMIT = 10
 CELERY_TASK_SOFT_TIME_LIMIT = 10
 CELERY_TIMEZONE = "America/Campo_Grande"
 DJANGO_CELERY_BEAT_TZ_AWARE = False
 CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_EXTENDED = True
 if CONFIG_REDIS_URL:
     CELERY_BROKER_URL = f'redis://{CONFIG_REDIS_URL}:6379/0'
 else:
