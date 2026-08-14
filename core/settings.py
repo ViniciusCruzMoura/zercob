@@ -66,7 +66,23 @@ INSTALLED_APPS = [
     'apps.user_admin',
     'apps.cobranca',
 ]
+AUDITLOG_INCLUDE_ALL_MODELS = True
+AUDITLOG_EXCLUDE_TRACKING_MODELS = (
+    "django_celery_beat",
+    "django_celery_results",
+    "post_office",
+    "auth",
+#     "apps_processuais.BaseProdutivaNotificacao",
+)
+IMPORT_EXPORT_IMPORT_PERMISSION_CODE = "import"
+IMPORT_EXPORT_EXPORT_PERMISSION_CODE = "export"
+IMPORT_EXPORT_FORMATS = [XLSX]#, CSV]
+IMPORT_EXPORT_SKIP_ADMIN_LOG = False
+IMPORT_EXPORT_ESCAPE_FORMULAE_ON_EXPORT = True
+IMPORT_EXPORT_SKIP_ADMIN_EXPORT_UI = True
+# DATA_UPLOAD_MAX_NUMBER_FILES = 100 # Default is 100
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,6 +90,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "auditlog.middleware.AuditlogMiddleware",
 ]
 ROOT_URLCONF = 'core.urls'
 LOGIN_REDIRECT_URL = "admin:index"
