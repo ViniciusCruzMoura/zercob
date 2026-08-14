@@ -1,11 +1,82 @@
+# O framework web usado para construir o projeto
+# https://www.djangoproject.com/download/
 django==5.2
+
+# Django REST framework para construção de APIs Web
+# https://www.django-rest-framework.org/community/release-notes/
+djangorestframework
+
+# Biblioteca HTTP Python para fazer requisições
+# https://docs.python-requests.org/en/latest/
 requests
+
+# Um servidor HTTP WSGI para UNIX
+# https://gunicorn.org/#getting-started
 gunicorn
+
+# O pacote Python para desacoplar configurações do código
+# https://github.com/henriquebastos/python-decouple
 python-decouple
-oracledb
+
+# Adaptador de banco de dados PostgreSQL para Python
+# https://pypi.org/project/psycopg2-binary/
 psycopg2-binary
+oracledb
+
+# Gerenciador de tarefas em segundo plano para Django
+# https://docs.celeryproject.org/en/stable/
 celery
+
+# Redis é um armazenador de estrutura de dados em memória
+# https://redis.io/
 redis
+
+# Integração do Django para resultados do Celery
+# https://django-celery-results.readthedocs.io/en/latest/
 django-celery-results
+
+# Programador Celery Beat para Django
+# https://django-celery-beat.readthedocs.io/en/latest/
 django_celery_beat
+
+# Campo para armazenar informações de fuso horário
+# https://github.com/mfogel/django-timezone-field
 django-timezone-field
+
+# Algoritmo Diff match patch para comparação de textos
+# https://github.com/google/diff-match-patch
+diff_match_patch
+
+# Uma biblioteca de propósito geral para dados tabulares
+# https://tablib.readthedocs.io/en/stable/
+tablib
+
+# Extensões para o módulo datetime padrão do Python
+# https://dateutil.readthedocs.io/en/stable/
+python-dateutil
+
+# Backend de e-mail do Django para envio de e-mails
+# https://github.com/adamchainz/django-post-office
+django-post-office
+
+# Biblioteca para geração de documentos e templates para arquivos Microsoft Word
+# https://github.com/elapouya/python-docx-template
+docxtpl
+
+# Converter arquivos .docx para PDF
+# https://github.com/AlJohri/docx2pdf
+docx2pdf
+
+# Biblioteca para interagir com a plataforma do Dropbox
+# https://github.com/dropbox/dropbox-sdk-python
+dropbox
+
+# Biblioteca de alto desempenho para extração, análise, conversão e manipulação
+# de dados em documentos PDF (e outros).
+# https://github.com/pymupdf/pymupdf
+PyMuPDF
+
+# Biblioteca para ler, extrair, dividir, mesclar e manipular arquivos PDF
+# https://github.com/py-pdf/pypdf
+PyPDF2
+pypdf
