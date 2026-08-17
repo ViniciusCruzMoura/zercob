@@ -3,8 +3,84 @@ from django.core.validators import RegexValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 
+# class OperacoesParametros(models.Model):
+#     id = models.BigAutoField(primary_key=True)
+
+# class CarteirasOperacoes(models.Model):
+#     id = models.BigAutoField(primary_key=True)
+
+# 1 carteira pode ter N operações
+# 1 operação pode ter 1 parametros
+
+# carteira (agrupador de contratos de uma operação).
 class Carteiras(models.Model):
     id = models.BigAutoField(primary_key=True)
+
+    ativo = models.BooleanField(
+        default=True, 
+        help_text="Coluna para Exclusão logica do registro",
+        db_comment="Coluna para Exclusão logica do registro",
+        verbose_name="Registro Ativo",
+    )
+    data_inclusao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Inclusão",
+        db_index=True,
+        auto_now_add=True,
+    )
+    data_alteracao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Alteração",
+        db_index=True,
+        auto_now_add=True,
+    )
+    usuario_inclusao = models.CharField(
+        max_length=300,
+        help_text="Usuario da Inclusão do Processo",
+        db_comment="Usuario da Inclusão do Processo",
+        verbose_name="Usuario da Inclusão",
+        default="sistema",
+    )
+    usuario_alteracao = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True,
+        help_text="Usuario da Alteração do Processo",
+        db_comment="Usuario da Alteração do Processo",
+        verbose_name="Usuario da Alteração",
+        default="sistema",
+    )
+
+#     UPLOAD = 1
+#     API = 2
+#     FTP = 3
+#     DIGITACAO = 4
+#     INTEGRACAO = 5
+#     ORIGEM_CHOICES = {
+#         UPLOAD: "Upload",
+#         API: "API",
+#         FTP: "FTP",
+#         DIGITACAO: "Digitação",
+#         INTEGRACAO: "Integração",
+#     }
+#     origem = models.IntegerField(
+#         help_text="Origem da Carga",
+#         db_comment="",
+#         verbose_name="Origem da Carga",
+#         choices=ORIGEM_CHOICES,
+#         default=EM_CADASTRO
+#     )
+
+    organizacao = models.ForeignKey(
+        'Organizacao',
+        on_delete=models.PROTECT,
+    )
 
     EM_CADASTRO = 1
     EM_VALIDACAO = 2
@@ -31,26 +107,71 @@ class Carteiras(models.Model):
         db_comment="Nome",
         verbose_name="Nome",
     )
-    observacao = models.TextField(
-        max_length=3000,
-        help_text="Observação",
-        db_comment="Observação",
-        verbose_name="Observação",
+#     observacao = models.TextField(
+#         max_length=3000,
+#         help_text="Observação",
+#         db_comment="Observação",
+#         verbose_name="Observação",
+#     )
+
+    responsavel = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        help_text="Responsavel pela Carteira",
+        db_comment="Responsavel pela Carteira",
+        verbose_name="Responsavel pela Carteira",
+    )
+#     ZEROU = 1
+#     CLIENTE_PROPRIETARIO = 2
+#     PARCEIRO = 3
+#     TIPO_RESPONSAVEL_CHOICES = {
+#         ZEROU: "Zerou",
+#         CLIENTE_PROPRIETARIO: "Cliente Proprietario",
+#         PARCEIRO: "Parceiro",
+#     }
+#     tipo_responsavel = models.IntegerField(
+#         help_text="Situação",
+#         db_comment="",
+#         verbose_name="Situação",
+#         choices=STATUS_CHOICES,
+#         default=EM_CADASTRO
+#     )
+    nome_responsavel = models.CharField(
+        max_length=150,
+        help_text="Nome do Responsavel pela Carteira",
+        db_comment="Nome do Responsavel pela Carteira",
+        verbose_name="Nome do Responsavel pela Carteira",
     )
 
-    nome_cliente_proprietario = models.CharField(
-        max_length=150,
-        help_text="Nome Cliente Proprietario",
-        db_comment="Nome Cliente Proprietario",
-        verbose_name="Nome Cliente Proprietario",
-    )
-#     usuario_responsavel
-    nome_empresa_responsavel = models.CharField(
-        max_length=150,
-        help_text="Nome Empresa Responsavel",
-        db_comment="Nome Empresa Responsavel",
-        verbose_name="Nome Empresa Responsavel",
-    )
+#     get_quantidade_contratos(self)
+#     get_valor_total(self)
+#     get_valor_atualizado(self)
+#     get_percentual_recuperacao(self)
+
+    TIMEZONE_1 = 1
+    TIMEZONE_2 = 2
+    TIMEZONE_3 = 3
+    TIMEZONE_4 = 4
+    TIMEZONE_CHOICES = {
+        TIMEZONE_1: "Fuso -1",
+        TIMEZONE_2: "Fuso -2",
+        TIMEZONE_3: "Fuso -3",
+        TIMEZONE_4: "Fuso -4",
+    }
+
+#     dias_uteis
+#     horario_inicio
+#     horario_fim
+
+#     duracao_padrao_atendimento_min
+#     capacidade_default_diaria
+#     capacidade_default_simultanea
+#     tempo_inatividade_min
+#     politica_redistribuicao MANUAL
+#     retencao_interacoes_dias
+
 
 
     def __str__(self):
@@ -66,8 +187,350 @@ class Carteiras(models.Model):
             ('export_carteiras', 'Can export')
         )
 
+from django.contrib import admin
+class UsuarioOrganizacao(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    organizacao = models.ForeignKey(
+        'Organizacao',
+        verbose_name="Organização",
+        on_delete=models.PROTECT,
+    )
+    usuario = models.ForeignKey(
+        User,
+        verbose_name="Usuario",
+        on_delete=models.PROTECT,
+    )
+    @property
+    def get_usuario_name(self):
+        if self.usuario:
+            return self.usuario.name
+        return "-"
+    @property
+    def get_usuario_email(self):
+        if self.usuario:
+            return self.usuario.email
+        return "-"
+    def __str__(self):
+        return f"{self.id}"
+    class Meta:
+        #abstract = True
+        db_table = "usuario_organizacao"
+        verbose_name = "Organização do Usuario"
+        verbose_name_plural = "Organizações do Usuario"
+        db_table_comment = "Organizações do Usuario"
+        permissions = (
+            ('import_usuarioorganizacao', 'Can import'),
+            ('export_usuarioorganizacao', 'Can export')
+        )
+
+class Organizacao(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ativo = models.BooleanField(
+        default=True, 
+        help_text="Coluna para Exclusão logica do registro",
+        db_comment="Coluna para Exclusão logica do registro",
+        verbose_name="Registro Ativo",
+    )
+    data_inclusao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Inclusão",
+        db_index=True,
+        auto_now_add=True,
+    )
+    data_alteracao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Alteração",
+        db_index=True,
+        auto_now_add=True,
+    )
+    usuario_inclusao = models.CharField(
+        max_length=300,
+        help_text="Usuario da Inclusão do Processo",
+        db_comment="Usuario da Inclusão do Processo",
+        verbose_name="Usuario da Inclusão",
+        default="sistema",
+    )
+    usuario_alteracao = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True,
+        help_text="Usuario da Alteração do Processo",
+        db_comment="Usuario da Alteração do Processo",
+        verbose_name="Usuario da Alteração",
+        default="sistema",
+    )
+
+    cpf_cnpj = models.CharField(
+        max_length=300,
+        help_text="CPF ou CNPJ (com ou sem pontuação).",
+        db_comment="CPF/CNPJ",
+        verbose_name="CPF/CNPJ",
+        db_index=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14}', 
+                message=(
+                    'Informe um CPF (xxx.xxx.xxx-xx ou só dígitos) ou um CNPJ '
+                    '(xx.xxx.xxx/xxxx-xx ou só dígitos).'
+                )
+            ),
+        ],
+    )
+    razao_social = models.CharField(
+        max_length=150,
+        help_text="Razão Social",
+        db_comment="Razão Social",
+        verbose_name="Razão Social",
+    )
+    nome_fantasia = models.CharField(
+        max_length=150,
+        help_text="Nome Fantasia",
+        db_comment="Nome Fantasia",
+        verbose_name="Nome Fantasia",
+    )
+    endereco = models.CharField(
+        max_length=150,
+        help_text="Endereço",
+        db_comment="Endereço",
+        verbose_name="Endereço",
+    )
+    telefone = models.CharField(
+        max_length=17,
+        help_text="Telefone",
+        db_comment="Telefone",
+        verbose_name="Telefone",
+        validators=[
+            RegexValidator(
+                regex=r'^\+55\s\d{2}\s\d{4,5}-\d{4}$',
+                message='Numero de Telefone Invalido. Padrão: +55 DDD XXXXX-XXXX'
+            )
+        ],
+    )
+    email_institucional = models.CharField(
+        max_length=256,
+        help_text="Email Institucional",
+        db_comment="Email Institucional",
+        verbose_name="Email Institucional",
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+                message='Email Invalido.'
+            )
+        ],
+    )
+    def __str__(self):
+        return f"{self.nome_fantasia} ({self.cpf_cnpj})"
+    class Meta:
+        #abstract = True
+        db_table = "organizacao"
+        verbose_name = "Organização"
+        verbose_name_plural = "Organizações"
+        db_table_comment = "Organizações"
+        permissions = (
+            ('import_clienteorganizacao', 'Can import'),
+            ('export_clienteorganizacao', 'Can export')
+        )
+
+# class ContratoDebito
+# class ContratoDebitoParcela
+# existe um devido(divida) e esta divida pode ter N parcelas
+
+# class ContratosNotificacao(models.Models):
+#     id = models.BigAutoField(primary_key=True)
+
+class ContratosParcelas(models.Model):
+    id = models.BigAutoField(primary_key=True)
+
+    ativo = models.BooleanField(
+        default=True, 
+        help_text="Coluna para Exclusão logica do registro",
+        db_comment="Coluna para Exclusão logica do registro",
+        verbose_name="Registro Ativo",
+    )
+    data_inclusao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Inclusão",
+        db_index=True,
+        auto_now_add=True,
+    )
+    data_alteracao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Alteração",
+        db_index=True,
+        auto_now_add=True,
+    )
+    usuario_inclusao = models.CharField(
+        max_length=300,
+        help_text="Usuario da Inclusão do Processo",
+        db_comment="Usuario da Inclusão do Processo",
+        verbose_name="Usuario da Inclusão",
+        default="sistema",
+    )
+    usuario_alteracao = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True,
+        help_text="Usuario da Alteração do Processo",
+        db_comment="Usuario da Alteração do Processo",
+        verbose_name="Usuario da Alteração",
+        default="sistema",
+    )
+
+    contrato = models.ForeignKey(
+        'Contratos',
+        on_delete=models.CASCADE,
+    )
+    numero_parcela = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+        db_comment="N° Parcela",
+        verbose_name="N° Parcela",
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(420),
+        ],
+        null=True,
+        blank=True,
+    )
+    data_vencimento = models.DateField(
+#         help_text="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data do Vencimento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data do Vencimento",
+        db_index=True,
+        null=True,
+        blank=True,
+    )
+    data_vencimento_original = models.DateField(
+#         help_text="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data do Vencimento Original: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data do Vencimento Original",
+        db_index=True,
+        null=True,
+        blank=True,
+    )
+    data_pagamento = models.DateField(
+#         help_text="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data do Pagamento",
+        db_index=True,
+        null=True,
+        blank=True,
+    )
+    valor = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+        db_comment="Valor da Parcela",
+        verbose_name="Valor da Parcela",
+        validators=[
+            MinValueValidator(100)
+        ],
+        null=True,
+        blank=True,
+    )
+    valor_atualizado = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+        db_comment="Valor Atualizado",
+        verbose_name="Valor Atualizado",
+        validators=[
+            MinValueValidator(100)
+        ],
+        null=True,
+        blank=True,
+    )
+    valor_pago = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+        db_comment="Valor Pago",
+        verbose_name="Valor Pago",
+        validators=[
+            MinValueValidator(100)
+        ],
+        null=True,
+        blank=True,
+    )
+
+    A_VENCER = 1
+    VENCIDO = 2
+    PAGO = 3
+    STATUS_CHOICES = {
+        A_VENCER: "A vencer",
+        VENCIDO: "Vencido",
+        PAGO: "Pago",
+    }
+    status = models.IntegerField(
+        help_text="Situação",
+        db_comment="Situação",
+        verbose_name="Situação",
+        choices=STATUS_CHOICES,
+        default=A_VENCER
+    )
+    
+    def __str__(self):
+        return f"{self.id}"
+    class Meta:
+        #abstract = True
+        db_table = "contratos_parcelas"
+        verbose_name = "Parcela em Debito do Contrato"
+        verbose_name_plural = "Parcelas em Debido do Contrato"
+        db_table_comment = "Parcelas em Debido do Contrato"
+        permissions = (
+            ('import_contratosparcelasdebito', 'Can import'),
+            ('export_contratosparcelasdebito', 'Can export')
+        )
+
 class Contratos(models.Model):
     id = models.BigAutoField(primary_key=True)
+
+    ativo = models.BooleanField(
+        default=True, 
+        help_text="Coluna para Exclusão logica do registro",
+        db_comment="Coluna para Exclusão logica do registro",
+        verbose_name="Registro Ativo",
+    )
+    data_inclusao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Inclusão do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Inclusão",
+        db_index=True,
+        auto_now_add=True,
+    )
+    data_alteracao = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        db_comment="Data da Alteração do Processo: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+        verbose_name="Data da Alteração",
+        db_index=True,
+        auto_now_add=True,
+    )
+    usuario_inclusao = models.CharField(
+        max_length=300,
+        help_text="Usuario da Inclusão do Processo",
+        db_comment="Usuario da Inclusão do Processo",
+        verbose_name="Usuario da Inclusão",
+        default="sistema",
+    )
+    usuario_alteracao = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True,
+        help_text="Usuario da Alteração do Processo",
+        db_comment="Usuario da Alteração do Processo",
+        verbose_name="Usuario da Alteração",
+        default="sistema",
+    )
+
     carteira = models.ForeignKey(
         Carteiras,
         on_delete=models.CASCADE,
@@ -79,6 +542,15 @@ class Contratos(models.Model):
         db_comment="Devedor",
         verbose_name="Devedor",
     )
+
+#     status
+#     valor_original
+#     saldo_devedor
+#     valor_atualizado
+
+#     data_vencimento
+#     data_vencimento_original
+
     def __str__(self):
         return f"{self.id}"
     class Meta:
@@ -139,12 +611,12 @@ class Propostas(models.Model):
         db_comment="Decisor",
         verbose_name="Decisor"
     )
-    observacao = models.TextField(
-        max_length=3000,
-        help_text="Observação",
-        db_comment="Observação",
-        verbose_name="Observação",
-    )
+#     observacao = models.TextField(
+#         max_length=3000,
+#         help_text="Observação",
+#         db_comment="Observação",
+#         verbose_name="Observação",
+#     )
 
     def __str__(self):
         return f"{self.id}"
@@ -162,95 +634,95 @@ class Propostas(models.Model):
 # class PropostasNegociadas(models.Model):
 #     pass
 
-class DevedoresParecelas(models.Model):
-    A_VENCER = 1
-    PAGO = 2
-    QUEBRA = 3
-    CANCELADO = 4
-    STATUS_CHOICES = {
-        A_VENCER: "A vencer",
-        PAGO: "Pago",
-        QUEBRA: "Quebra",
-        CANCELADO: "Cancelado",
-    }
-    id = models.BigAutoField(primary_key=True)
-    devedor = models.ForeignKey(
-        'Devedores',
-        on_delete=models.CASCADE,
-        related_name='parcelas',
-        help_text="Referência à Devedores"
-    )
-    status = models.IntegerField(
-        help_text="Situação",
-        db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
-        verbose_name="Situação",
-        choices=STATUS_CHOICES,
-        default=A_VENCER
-    )
-    parcela_inicio = models.IntegerField(
-        help_text="Parcela Inicial",
-        db_comment="Parcela Inicial",
-        verbose_name="Parcela Inicial",
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(120),
-        ],
-        null=True,
-        blank=True,
-    )
-    parcela_final = models.IntegerField(
-        help_text="Parcela Final",
-        db_comment="Parcela Final",
-        verbose_name="Parcela Final",
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(120),
-        ],
-        null=True,
-        blank=True,
-    )
-    valor_apagar = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor A pagar",
-        verbose_name="Valor A pagar",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    valor_pago = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor Pago",
-        verbose_name="Valor Pago",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    saldo = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor do Saldo",
-        verbose_name="Valor do Saldo",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    def __str__(self):
-        return f"{self.id}"
-    class Meta:
-        #abstract = True
-        db_table = "devedores_parecelas"
-        verbose_name = "Parcela do Devedor"
-        verbose_name_plural = "Parcelas do Devedor"
-        db_table_comment = "Parcelas do Devedor"
-        permissions = (
-            ('import_devedoresparcelas', 'Can import'),
-            ('export_devedoresoarcelas', 'Can export')
-        )
+# class DevedoresParecelas(models.Model):
+#     A_VENCER = 1
+#     PAGO = 2
+#     QUEBRA = 3
+#     CANCELADO = 4
+#     STATUS_CHOICES = {
+#         A_VENCER: "A vencer",
+#         PAGO: "Pago",
+#         QUEBRA: "Quebra",
+#         CANCELADO: "Cancelado",
+#     }
+#     id = models.BigAutoField(primary_key=True)
+#     devedor = models.ForeignKey(
+#         'Devedores',
+#         on_delete=models.CASCADE,
+#         related_name='parcelas',
+#         help_text="Referência à Devedores"
+#     )
+#     status = models.IntegerField(
+#         help_text="Situação",
+#         db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
+#         verbose_name="Situação",
+#         choices=STATUS_CHOICES,
+#         default=A_VENCER
+#     )
+#     parcela_inicio = models.IntegerField(
+#         help_text="Parcela Inicial",
+#         db_comment="Parcela Inicial",
+#         verbose_name="Parcela Inicial",
+#         validators=[
+#             MinValueValidator(0),
+#             MaxValueValidator(120),
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     parcela_final = models.IntegerField(
+#         help_text="Parcela Final",
+#         db_comment="Parcela Final",
+#         verbose_name="Parcela Final",
+#         validators=[
+#             MinValueValidator(0),
+#             MaxValueValidator(120),
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     valor_apagar = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor A pagar",
+#         verbose_name="Valor A pagar",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     valor_pago = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor Pago",
+#         verbose_name="Valor Pago",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     saldo = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor do Saldo",
+#         verbose_name="Valor do Saldo",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     def __str__(self):
+#         return f"{self.id}"
+#     class Meta:
+#         #abstract = True
+#         db_table = "devedores_parecelas"
+#         verbose_name = "Parcela do Devedor"
+#         verbose_name_plural = "Parcelas do Devedor"
+#         db_table_comment = "Parcelas do Devedor"
+#         permissions = (
+#             ('import_devedoresparcelas', 'Can import'),
+#             ('export_devedoresoarcelas', 'Can export')
+#         )
 
 class DevedoresEnderecos(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -345,6 +817,12 @@ class DevedoresContatos(models.Model):
         help_text="Contato",
         db_comment="Contato",
         verbose_name="Contato",
+        validators=[
+            RegexValidator(
+                regex=r'^\+55\s\d{2}\s\d{4,5}-\d{4}$|^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+                message='Contato Invalido.'
+            )
+        ],
     )
     observacao = models.TextField(
         max_length=3000,
@@ -407,13 +885,13 @@ class Devedores(models.Model):
         null=True,
         blank=True,
     )
-    titulo = models.CharField(
-        max_length=300,
-        help_text="Titulo",
-        db_comment="Titulo",
-        verbose_name="Titulo",
-        db_index=True,
-    )
+#     titulo = models.CharField(
+#         max_length=300,
+#         help_text="Titulo",
+#         db_comment="Titulo",
+#         verbose_name="Titulo",
+#         db_index=True,
+#     )
 
     def __str__(self):
         return f"{self.nome_cliente} ({self.cpf_cnpj})"
@@ -429,191 +907,191 @@ class Devedores(models.Model):
             ('viewall_devedores', 'Can view all Arquivo do Solfacil Acordo'),
         )
 
-class AcordosParcelas(models.Model):
-    A_VENCER = 1
-    PAGO = 2
-    QUEBRA = 3
-    CANCELADO = 4
-    STATUS_CHOICES = {
-        A_VENCER: "A vencer",
-        PAGO: "Pago",
-        QUEBRA: "Quebra",
-        CANCELADO: "Cancelado",
-    }
-    id = models.BigAutoField(primary_key=True)
-    acordo = models.ForeignKey(
-        'Acordos',
-        on_delete=models.CASCADE,
-        related_name='parcelas',
-        help_text="Referência à Acordos"
-    )
-    status = models.IntegerField(
-        help_text="Situação",
-        db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
-        verbose_name="Situação",
-        choices=STATUS_CHOICES,
-        default=A_VENCER
-    )
-    parcela_inicio = models.IntegerField(
-        help_text="Parcela Inicial",
-        db_comment="Parcela Inicial",
-        verbose_name="Parcela Inicial",
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(120),
-        ],
-        null=True,
-        blank=True,
-    )
-    parcela_final = models.IntegerField(
-        help_text="Parcela Final",
-        db_comment="Parcela Final",
-        verbose_name="Parcela Final",
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(120),
-        ],
-        null=True,
-        blank=True,
-    )
-    valor_apagar = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor A pagar",
-        verbose_name="Valor A pagar",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    valor_pago = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor Pago",
-        verbose_name="Valor Pago",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    saldo = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor do Saldo",
-        verbose_name="Valor do Saldo",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    def __str__(self):
-        return f"{self.id}"
-    class Meta:
-        #abstract = True
-        db_table = "acordos_parecelas"
-        verbose_name = "Parcela do Acordo"
-        verbose_name_plural = "Parcelas do Acordo"
-        db_table_comment = "Parcelas do Acordo"
-        permissions = (
-            ('import_devedoresparcelas', 'Can import'),
-            ('export_devedoresoarcelas', 'Can export')
-        )
+# class AcordosParcelas(models.Model):
+#     A_VENCER = 1
+#     PAGO = 2
+#     QUEBRA = 3
+#     CANCELADO = 4
+#     STATUS_CHOICES = {
+#         A_VENCER: "A vencer",
+#         PAGO: "Pago",
+#         QUEBRA: "Quebra",
+#         CANCELADO: "Cancelado",
+#     }
+#     id = models.BigAutoField(primary_key=True)
+#     acordo = models.ForeignKey(
+#         'Acordos',
+#         on_delete=models.CASCADE,
+#         related_name='parcelas',
+#         help_text="Referência à Acordos"
+#     )
+#     status = models.IntegerField(
+#         help_text="Situação",
+#         db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
+#         verbose_name="Situação",
+#         choices=STATUS_CHOICES,
+#         default=A_VENCER
+#     )
+#     parcela_inicio = models.IntegerField(
+#         help_text="Parcela Inicial",
+#         db_comment="Parcela Inicial",
+#         verbose_name="Parcela Inicial",
+#         validators=[
+#             MinValueValidator(0),
+#             MaxValueValidator(120),
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     parcela_final = models.IntegerField(
+#         help_text="Parcela Final",
+#         db_comment="Parcela Final",
+#         verbose_name="Parcela Final",
+#         validators=[
+#             MinValueValidator(0),
+#             MaxValueValidator(120),
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     valor_apagar = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor A pagar",
+#         verbose_name="Valor A pagar",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     valor_pago = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor Pago",
+#         verbose_name="Valor Pago",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     saldo = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor do Saldo",
+#         verbose_name="Valor do Saldo",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     def __str__(self):
+#         return f"{self.id}"
+#     class Meta:
+#         #abstract = True
+#         db_table = "acordos_parecelas"
+#         verbose_name = "Parcela do Acordo"
+#         verbose_name_plural = "Parcelas do Acordo"
+#         db_table_comment = "Parcelas do Acordo"
+#         permissions = (
+#             ('import_devedoresparcelas', 'Can import'),
+#             ('export_devedoresoarcelas', 'Can export')
+#         )
 
-class AcordosPagamentos(models.Model):
-    PENDENTE = 1
-    ESTORNADO = 2
-    CONCILIADO = 3
-    STATUS_CHOICES = {
-        ESTORNADO: "Estornado",
-        CONCILIADO: "Conciliado",
-        PENDENTE: "Pendente",
-    }
-    PIX = 1
-    BOLETO = 2
-    METODO_PAGAMENTO_CHOICES = {
-        PIX: "Pix",
-        BOLETO: "Boleto",
-    }
-    id = models.BigAutoField(primary_key=True)
-    acordo = models.ForeignKey(
-        'Acordos',
-        on_delete=models.CASCADE,
-        related_name='pagamentos',
-        help_text="Referência à Acordos"
-    )
-    status = models.IntegerField(
-        help_text="Situação",
-        db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
-        verbose_name="Situação",
-        choices=STATUS_CHOICES,
-        default=PENDENTE
-    )
-    metodo_pagamento = models.IntegerField(
-        help_text="Metodo de Pagamento",
-        db_comment=" ",
-        verbose_name="Metodo de Pagamento",
-        choices=METODO_PAGAMENTO_CHOICES,
-        default=PIX
-    )
-    valor_pago = models.IntegerField(
-        help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
-        db_comment="Valor Pago",
-        verbose_name="Valor Pago",
-        validators=[
-            MinValueValidator(100)
-        ],
-        null=True,
-        blank=True,
-    )
-    data_pagamento = models.DateField(
-        help_text="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
-        db_comment="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
-        verbose_name="Data do Pagamento",
-        db_index=True,
-        null=True,
-        blank=True,
-    )
-    def __str__(self):
-        return f"{self.id}"
-    class Meta:
-        #abstract = True
-        db_table = "acordos_pagamentos"
-        verbose_name = "Pagamento do Acordo"
-        verbose_name_plural = "Pagamentos do Acordo"
-        db_table_comment = "Pagamentos do Acordo"
-        permissions = (
-            ('import_acordospagamentos', 'Can import'),
-            ('export_acordospagamentos', 'Can export')
-        )
+# class AcordosPagamentos(models.Model):
+#     PENDENTE = 1
+#     ESTORNADO = 2
+#     CONCILIADO = 3
+#     STATUS_CHOICES = {
+#         ESTORNADO: "Estornado",
+#         CONCILIADO: "Conciliado",
+#         PENDENTE: "Pendente",
+#     }
+#     PIX = 1
+#     BOLETO = 2
+#     METODO_PAGAMENTO_CHOICES = {
+#         PIX: "Pix",
+#         BOLETO: "Boleto",
+#     }
+#     id = models.BigAutoField(primary_key=True)
+#     acordo = models.ForeignKey(
+#         'Acordos',
+#         on_delete=models.CASCADE,
+#         related_name='pagamentos',
+#         help_text="Referência à Acordos"
+#     )
+#     status = models.IntegerField(
+#         help_text="Situação",
+#         db_comment="1 - A vencer, 2 - Pago, 3 - Quebra",
+#         verbose_name="Situação",
+#         choices=STATUS_CHOICES,
+#         default=PENDENTE
+#     )
+#     metodo_pagamento = models.IntegerField(
+#         help_text="Metodo de Pagamento",
+#         db_comment=" ",
+#         verbose_name="Metodo de Pagamento",
+#         choices=METODO_PAGAMENTO_CHOICES,
+#         default=PIX
+#     )
+#     valor_pago = models.IntegerField(
+#         help_text="Sem separadores de milhares e sem vírgula. É obrigatório sempre informar as casas decimais, ainda que seu valor seja “00” Exemplo: 128088 deve ser informado para o número R$ 1280,88",
+#         db_comment="Valor Pago",
+#         verbose_name="Valor Pago",
+#         validators=[
+#             MinValueValidator(100)
+#         ],
+#         null=True,
+#         blank=True,
+#     )
+#     data_pagamento = models.DateField(
+#         help_text="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+#         db_comment="Data do Pagamento: AAAA-MM-DD; A: Ano com 4 caracteres M: Mês com 2 caracteres D: Dia com 2 caracteres",
+#         verbose_name="Data do Pagamento",
+#         db_index=True,
+#         null=True,
+#         blank=True,
+#     )
+#     def __str__(self):
+#         return f"{self.id}"
+#     class Meta:
+#         #abstract = True
+#         db_table = "acordos_pagamentos"
+#         verbose_name = "Pagamento do Acordo"
+#         verbose_name_plural = "Pagamentos do Acordo"
+#         db_table_comment = "Pagamentos do Acordo"
+#         permissions = (
+#             ('import_acordospagamentos', 'Can import'),
+#             ('export_acordospagamentos', 'Can export')
+#         )
 
-class Acordos(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    devedor = models.ForeignKey(
-        Devedores, 
-        on_delete=models.PROTECT, 
-        blank=True,
-        null=True,
-        help_text="Devedor",
-        db_comment="Devedor",
-        verbose_name="Devedor",
-    )
-
-# -devedor(tabela Devedores) 1 para N
-# -lista de parcelas negociada(tabela AcordoParcelas) 1 para N
-# -?instrução pagamento
-# -?registro pagamento
-# -pagamento (tabela Pagamento)
-
-    def __str__(self):
-        return f"{self.id}"
-    class Meta:
-        #abstract = True
-        db_table = "acorodos"
-        verbose_name = "Acordos"
-        verbose_name_plural = "Acordos"
-        db_table_comment = "Acordos"
-        permissions = (
-            ('import_acordos', 'Can import'),
-            ('export_acordos', 'Can export'),
-            ('viewall_acordos', 'Can view all Arquivo do Solfacil Acordo'),
-        )
+# class Acordos(models.Model):
+#     id = models.BigAutoField(primary_key=True)
+#     devedor = models.ForeignKey(
+#         Devedores, 
+#         on_delete=models.PROTECT, 
+#         blank=True,
+#         null=True,
+#         help_text="Devedor",
+#         db_comment="Devedor",
+#         verbose_name="Devedor",
+#     )
+# 
+# # -devedor(tabela Devedores) 1 para N
+# # -lista de parcelas negociada(tabela AcordoParcelas) 1 para N
+# # -?instrução pagamento
+# # -?registro pagamento
+# # -pagamento (tabela Pagamento)
+# 
+#     def __str__(self):
+#         return f"{self.id}"
+#     class Meta:
+#         #abstract = True
+#         db_table = "acorodos"
+#         verbose_name = "Acordos"
+#         verbose_name_plural = "Acordos"
+#         db_table_comment = "Acordos"
+#         permissions = (
+#             ('import_acordos', 'Can import'),
+#             ('export_acordos', 'Can export'),
+#             ('viewall_acordos', 'Can view all Arquivo do Solfacil Acordo'),
+#         )

@@ -9,6 +9,24 @@ from unfold.contrib.inlines.admin import NonrelatedTabularInline
 from unfold.sections import TableSection, TemplateSection
 from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
 
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+# MOD USER
+admin.site.unregister(User)
+
+class UsuarioOrganizacaoInline(StackedInline):
+    model = UsuarioOrganizacao
+    extra = 1
+    max_num = 1
+class UserAdmin(BaseUserAdmin):
+    inlines = [UsuarioOrganizacaoInline]
+
+admin.site.register(User, UserAdmin)
+
+
+
+
 class ContratosTableSection(TableSection):
 #     verbose_name = _("Table title")  # Displays custom table title
 #     height = 300  # Force the table height. Ideal for large amount of records
@@ -35,19 +53,19 @@ class PropostasAdmin(ModelAdmin):
             contrato__pk=obj_id
         )
 
-class AcordosPagamentosInline(admin.TabularInline):
-    model = AcordosPagamentos
-    extra = 1
-class AcordosParcelasInline(admin.TabularInline):
-    model = AcordosParcelas
-    extra = 1
-class AcordosAdmin(admin.ModelAdmin):
-    model = Acordos
-    inlines = [AcordosPagamentosInline, AcordosParcelasInline]
-    list_display = (
-        'devedor__nome_cliente',
-        'devedor__cpf_cnpj',
-    )
+# class AcordosPagamentosInline(admin.TabularInline):
+#     model = AcordosPagamentos
+#     extra = 1
+# class AcordosParcelasInline(admin.TabularInline):
+#     model = AcordosParcelas
+#     extra = 1
+# class AcordosAdmin(admin.ModelAdmin):
+#     model = Acordos
+#     inlines = [AcordosPagamentosInline, AcordosParcelasInline]
+#     list_display = (
+#         'devedor__nome_cliente',
+#         'devedor__cpf_cnpj',
+#     )
 
 
 # class DevedoresParecelasInline(admin.TabularInline):
@@ -69,17 +87,16 @@ class DevedoresAdmin(ModelAdmin):
         'cpf_cnpj',
         'numero_contrato',
         'saldo',
-        'titulo',
     )
     search_fields = ("id", "nome_cliente", "cpf_cnpj")
     inlines = [DevedoresContatosInline, DevedoresEnderecosInline]
 
-class DevedoresParecelasAdmin(admin.ModelAdmin):
-    model = DevedoresParecelas
-class AcordosParcelasAdmin(admin.ModelAdmin):
-    model = AcordosParcelas
-class AcordosPagamentosAdmin(admin.ModelAdmin):
-    model = AcordosPagamentos
+# class DevedoresParecelasAdmin(admin.ModelAdmin):
+#     model = DevedoresParecelas
+# class AcordosParcelasAdmin(admin.ModelAdmin):
+#     model = AcordosParcelas
+# class AcordosPagamentosAdmin(admin.ModelAdmin):
+#     model = AcordosPagamentos
 
 class PropostasDataset(BaseDataset):
     model = Propostas
@@ -153,6 +170,11 @@ class DevedoresNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
         main model object. Method must be implemented.
         """
         pass
+
+class ContratosParcelasInline(TabularInline):
+    model = ContratosParcelas
+    extra = 0
+    exclude = ('ativo', 'data_inclusao', 'data_alteracao', 'usuario_inclusao', 'usuario_alteracao')
 class PropostasInline(TabularInline):
     model = Propostas
     extra = 0
@@ -164,15 +186,21 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
     export_form_class = ExportForm
     search_fields = ("id",)  # add real searchable fields, e.g. "numero"
     autocomplete_fields = ("carteira", "devedor",)  # FK field on Contratos that points to Carteiras
-    inlines = [CarteirasNonrelatedInline, DevedoresNonrelatedInline, PropostasInline]
+    inlines = [CarteirasNonrelatedInline, DevedoresNonrelatedInline, ContratosParcelasInline, PropostasInline]
     list_display = (
         'devedor__nome_cliente',
         'devedor__cpf_cnpj',
         'devedor__numero_contrato',
         'devedor__saldo',
-        'devedor__titulo',
         'carteira__nome',
-        'carteira__nome_empresa_responsavel',
+        'carteira__nome_responsavel',
+    )
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
     )
 #     list_sections = [
 #         ContratosTableSection,
@@ -184,6 +212,36 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
 #         PropostasDataset,
 #     ]
 
+class UsuarioOrganizacao2Inline(NonrelatedTabularInline):
+    model = User
+    extra = 1
+    fields = ["id", "username", "first_name", "last_name", "email", "is_active"]
+    per_page = 5
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]
+    def get_form_queryset(self, obj):
+        if obj and obj.id:
+            return self.model.objects.filter(usuarioorganizacao__organizacao=obj)
+            #return self.model.objects.filter(organizacao_id=obj.id)
+        return self.model.objects.all()
+    def save_new_instance(self, parent, instance):
+        pass
+@admin.register(Organizacao)
+class OrganizacaoAdmin(ModelAdmin):
+    search_fields = ("id", "cpf_cnpj", "razao_social", "nome_fantasia")
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
+    list_display = ["cpf_cnpj", "razao_social", "nome_fantasia", "telefone", "email_institucional"]
+    inlines = [UsuarioOrganizacao2Inline]
 
 class ContratosInline(admin.TabularInline):
     model = Contratos
@@ -191,6 +249,13 @@ class ContratosInline(admin.TabularInline):
 @admin.register(Carteiras)
 class CarteirasAdmin(ModelAdmin):
     search_fields = ("id", "nome", "nome_empresa_responsavel")  # add real searchable fields, e.g. "numero"
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
     #inlines = [ContratosInline]
 
 # class ContratosInline(admin.TabularInline):
@@ -220,7 +285,7 @@ class CarteirasAdmin(ModelAdmin):
 admin.site.register(Devedores, DevedoresAdmin)
 # admin.site.register(AcordosParcelas, AcordosParcelasAdmin)
 # admin.site.register(AcordosPagamentos, AcordosPagamentosAdmin)
-admin.site.register(Acordos, AcordosAdmin)
+# admin.site.register(Acordos, AcordosAdmin)
 # admin.site.register(Carteiras, CarteirasAdmin)
 # admin.site.register(Contratos, ContratosAdmin)
 # admin.site.register(Propostas, PropostasAdmin)

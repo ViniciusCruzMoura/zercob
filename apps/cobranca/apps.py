@@ -4,7 +4,8 @@ from django.apps import AppConfig
 class CobrancaConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.cobranca'
-    verbose_name = "Solfacil"
+    label = 'apps_cobranca'
+    verbose_name = "Cobrança"
 
     icon = 'fa fa-square-poll-vertical'  # FontAwesome icon for the app (optional)
     divider_title = "Cobrança"  # Title of the section divider in the sidebar (optional)

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 #     'rest_framework',
 #     'post_office',
     'import_export',
+    #"import_export_extensions",
     'celery',
     'django_celery_beat',
     'django_celery_results',
@@ -200,7 +201,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 UNFOLD = {
-    "SITE_TITLE": "Custom suffix in <title> tag",
+    "SITE_TITLE": "Zerou Cobrança",
     "SITE_HEADER": "Appears in sidebar at the top",
     "SITE_SUBHEADER": "Appears under SITE_HEADER",
     "SITE_VERSION": "0.1.0",
