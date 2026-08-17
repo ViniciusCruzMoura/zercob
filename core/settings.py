@@ -222,21 +222,23 @@ UNFOLD = {
         "light": lambda request: static("icon-light.svg"),  # light mode
         "dark": lambda request: static("icon-dark.svg"),  # dark mode
     },
-    # "SITE_LOGO": lambda request: static("logo.svg"),  # both modes, optimise for 32px height
-    "SITE_LOGO": {
-        "light": lambda request: static("logo-light.svg"),  # light mode
-        "dark": lambda request: static("logo-dark.svg"),  # dark mode
-    },
+    #"SITE_LOGO": lambda request: static("logo.svg"),  # both modes, optimise for 32px height
+    "SITE_LOGO": lambda request: static("logo.png"),
+#     "SITE_LOGO": {
+#         "light": lambda request: static("logo-light.svg"),  # light mode
+#         "dark": lambda request: static("logo-dark.svg"),  # dark mode
+#     },
     "SITE_SYMBOL": "speed",  # symbol from icon set
     "SITE_FAVICONS": [
         {
             "rel": "icon",
             "sizes": "32x32",
             "type": "image/svg+xml",
-            "href": lambda request: static("favicon.svg"),
+            "href": lambda request: static("favicon.png"),
+            #"href": lambda request: static("favicon.svg"),
         },
     ],
-    "SHOW_HISTORY": True, # show/hide "History" button, default: True
+    "SHOW_HISTORY": False, # show/hide "History" button, default: True
     "SHOW_VIEW_ON_SITE": True, # show/hide "View on site" button, default: True
     "SHOW_BACK_BUTTON": False, # show/hide "Back" button on changeform in header, default: False
     "SHOW_UI_WARNINGS": False, # show/hide warnings in UI, default: False
@@ -245,10 +247,10 @@ UNFOLD = {
 #     "DASHBOARD_CALLBACK": "sample_app.dashboard_callback",
     "THEME": "light", # Force theme: "dark" or "light". Will disable theme switcher
 #     "LOGIN": {
-#         "image": lambda request: static("sample/login-bg.jpg"),
-#         "redirect_after": lambda request: reverse_lazy("admin:APP_MODEL_changelist"),
+#         "image": lambda request: static("login.png"),
+# #         "redirect_after": lambda request: reverse_lazy("admin:APP_MODEL_changelist"),
 #         # Inherits from `unfold.forms.AuthenticationForm`
-#         "form": "app.forms.CustomLoginForm",
+# #         "form": "app.forms.CustomLoginForm",
 #     },
     "STYLES": [
         lambda request: static("css/style.css"),
@@ -278,6 +280,7 @@ UNFOLD = {
             "300": "oklch(82.7% .119 306.383)",
             "400": "oklch(71.4% .203 305.504)",
             "500": "oklch(62.7% .265 303.9)",
+            #"600": "#35A77A",
             "600": "oklch(55.8% .288 302.321)",
             "700": "oklch(49.6% .265 301.924)",
             "800": "oklch(43.8% .218 303.724)",
