@@ -205,13 +205,13 @@ UNFOLD = {
     "SITE_HEADER": "Appears in sidebar at the top",
     "SITE_SUBHEADER": "Appears under SITE_HEADER",
     "SITE_VERSION": "0.1.0",
-    "SITE_DROPDOWN": [
-        {
-            "icon": "diamond",
-            "title": _("My site"),
-            "link": "https://example.com",
-        },
-    ],
+#     "SITE_DROPDOWN": [
+#         {
+#             "icon": "diamond",
+#             "title": _("My site"),
+#             "link": "https://example.com",
+#         },
+#     ],
     "SITE_URL": "/",
 #     "SITE_VIEWS": [
 #         ("some-path-to-view", "name_of_view_1", "path.to.view_itself_1"),
@@ -238,7 +238,7 @@ UNFOLD = {
             #"href": lambda request: static("favicon.svg"),
         },
     ],
-    "SHOW_HISTORY": False, # show/hide "History" button, default: True
+    "SHOW_HISTORY": True, # show/hide "History" button, default: True
     "SHOW_VIEW_ON_SITE": True, # show/hide "View on site" button, default: True
     "SHOW_BACK_BUTTON": False, # show/hide "Back" button on changeform in header, default: False
     "SHOW_UI_WARNINGS": False, # show/hide warnings in UI, default: False
@@ -252,12 +252,12 @@ UNFOLD = {
 #         # Inherits from `unfold.forms.AuthenticationForm`
 # #         "form": "app.forms.CustomLoginForm",
 #     },
-    "STYLES": [
-        lambda request: static("css/style.css"),
-    ],
-    "SCRIPTS": [
-        lambda request: static("js/script.js"),
-    ],
+#     "STYLES": [
+#         lambda request: static("css/style.css"),
+#     ],
+#     "SCRIPTS": [
+#         lambda request: static("js/script.js"),
+#     ],
     "BORDER_RADIUS": "6px",
     "COLORS": {
         "base": {

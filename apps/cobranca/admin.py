@@ -9,20 +9,29 @@ from unfold.contrib.inlines.admin import NonrelatedTabularInline
 from unfold.sections import TableSection, TemplateSection
 from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
+
+from apps.common.admin_model import admin_model_get_form_widget
 
 # MOD USER
 admin.site.unregister(User)
+admin.site.unregister(Group)
 
 class UsuarioOrganizacaoInline(StackedInline):
     model = UsuarioOrganizacao
     extra = 1
     max_num = 1
-class UserAdmin(BaseUserAdmin):
+@admin.register(User)
+class UserAdmin(BaseUserAdmin, ModelAdmin):
     inlines = [UsuarioOrganizacaoInline]
 
-admin.site.register(User, UserAdmin)
+@admin.register(Group)
+class GroupAdmin(BaseGroupAdmin, ModelAdmin):
+    pass
+
+#admin.site.register(User, UserAdmin)
 
 
 
@@ -212,6 +221,36 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
 #         PropostasDataset,
 #     ]
 
+class OrganizacaoRegrasCobrancaInline(TabularInline):
+    model = OrganizacaoRegrasCobranca
+    extra = 0
+    #exclude = ["data_alteracao", "usuario_inclusao", "usuario_alteracao"]
+    #readonly_fields = ["ativo", "data_inclusao", "data_alteracao", "usuario_inclusao", "usuario_alteracao"]
+#     def get_formset(self, request, obj=None, **kwargs):
+#         formset = super().get_formset(request, obj, **kwargs)
+# 
+#         original_init = formset.form.__init__
+# 
+#         def custom_init(form, *args, **form_kwargs):
+#             original_init(form, *args, **form_kwargs)
+# 
+#             field = form.fields["atraso"]
+# 
+#             # Server-side validation
+#             field.min_value = -10
+#             field.max_value = 10
+# 
+#             # Browser-side limits, keeping the default widget
+#             field.widget.attrs.update({
+#                 "min": -10,
+#                 "max": 10,
+#                 "step": 1,
+#             })
+# 
+#         formset.form.__init__ = custom_init
+# 
+#         return formset
+
 class UsuarioOrganizacao2Inline(NonrelatedTabularInline):
     model = User
     extra = 1
@@ -241,8 +280,43 @@ class OrganizacaoAdmin(ModelAdmin):
         'usuario_alteracao',
     )
     list_display = ["cpf_cnpj", "razao_social", "nome_fantasia", "telefone", "email_institucional"]
-    inlines = [UsuarioOrganizacao2Inline]
+    inlines = [OrganizacaoRegrasCobrancaInline, UsuarioOrganizacao2Inline]
+    cpf_cnpj_fields = ["cpf_cnpj"]
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        return form
 
+class CarteirasRegrasNegociacaoInline(StackedInline):
+    model = CarteirasRegrasNegociacao
+    extra = 1
+    max_num = 1
+    fields = ["a_vista", "parcelas", "juros", "multa", "desconto", "entrada_minima", "maximo_parcelas"]
+    percentage_fields = ["juros", "multa", "desconto"]
+    currency_fields = ["entrada_minima"]
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+#         original_init = formset.form.__init__
+#         def custom_init(form, *args, **form_kwargs):
+#             original_init(form, *args, **form_kwargs)
+# 
+#             field = form.fields["juros"]
+# 
+#             # Server-side validation
+#             field.min_value = 0
+#             field.max_value = 100
+# 
+#             # Browser-side limits, keeping the default widget
+#             field.widget.attrs.update({
+#                 "min": 0,
+#                 "max": 100,
+#                 "step": 1,
+#             })
+#         formset.form.__init__ = custom_init
+
+        admin_model_get_form_widget(formset.form, self, request, obj, **kwargs)
+
+        return formset
 class ContratosInline(admin.TabularInline):
     model = Contratos
     extra = 1
@@ -257,6 +331,7 @@ class CarteirasAdmin(ModelAdmin):
         'usuario_alteracao',
     )
     #inlines = [ContratosInline]
+    inlines = [CarteirasRegrasNegociacaoInline]
 
 # class ContratosInline(admin.TabularInline):
 #     model = Contratos

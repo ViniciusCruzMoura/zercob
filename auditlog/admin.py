@@ -65,9 +65,14 @@ class LogEntryAdmin(admin.ModelAdmin, LogEntryAdminMixin):
     def btn_detalhamento(self, obj):
         from django.utils.html import format_html
         from core.settings import NAMESPACE
+        # boostrap
+#         html = f"""
+#         <div class="btn-group float-right">
+#             <a href="/{NAMESPACE}/admin/auditlog/logentry/{obj.id}/change/" class="btn btn-xs btn-primary changelink">Detalhamento</a>
+#         </div>
+#         """
+        # tailwindcss 
         html = f"""
-        <div class="btn-group float-right">
-            <a href="/{NAMESPACE}/admin/auditlog/logentry/{obj.id}/change/" class="btn btn-xs btn-primary changelink">Detalhamento</a>
-        </div>
+        <a href="/{NAMESPACE}/admin/auditlog/logentry/{obj.id}/change/" class="border shadow-xs text-important py-2 px-2 rounded">Detalhamento</a>
         """
         return format_html(html)

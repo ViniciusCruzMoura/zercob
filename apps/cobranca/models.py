@@ -12,6 +12,88 @@ from django.contrib.auth.models import User
 # 1 carteira pode ter N operações
 # 1 operação pode ter 1 parametros
 
+class CarteirasRegrasNegociacao(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    carteira = models.ForeignKey(
+        'Carteiras',
+        on_delete=models.CASCADE,
+    )
+    juros = models.IntegerField(
+        help_text="% de Juros",
+        db_comment="% Juros",
+        verbose_name="% Juros",
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+    )
+    multa = models.IntegerField(
+        help_text="% de Multa",
+        db_comment="% Multa",
+        verbose_name="% Multa",
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+    )
+    a_vista = models.BooleanField(
+        default=True, 
+        help_text="Permitir Pagamentos A Vista",
+        db_comment="Permitir Pagamentos A Vista",
+        verbose_name="Pagamentos A Vista",
+    )
+    parcelas = models.BooleanField(
+        default=True, 
+        help_text="Permitir Pagamentos Parcelado",
+        db_comment="Permitir Pagamentos Parcelado",
+        verbose_name="Pagamentos Parcelado",
+    )
+    desconto = models.IntegerField(
+        help_text="% de Desconto",
+        db_comment="% Desconto",
+        verbose_name="% Desconto (A Vista)",
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        null=True,
+        blank=True,
+    )
+    entrada_minima = models.IntegerField(
+        help_text="Entrada Minima para o Acordo",
+        db_comment="Entrada Minima para o Acordo",
+        verbose_name="Entrada Minima para o Acordo",
+        validators=[
+            MinValueValidator(0),
+        ],
+        null=True,
+        blank=True,
+    )
+    maximo_parcelas = models.IntegerField(
+        help_text="Quantidade Maxima de Parcelas",
+        db_comment="Quantidade Maxima de Parcelas",
+        verbose_name="Quantidade Maxima de Parcelas",
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(420),
+        ],
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.id}"
+    class Meta:
+        #abstract = True
+        db_table = "carteiras_regras_negociacao"
+        verbose_name = "Regra de Negociação"
+        verbose_name_plural = "Regras de Neogiciação"
+        db_table_comment = "Regras de Neogiciação"
+        permissions = (
+            ('import_carteirasregrasnegociacao', 'Can import'),
+            ('export_carteirasregrasnegociacao', 'Can export')
+        )
+
 # carteira (agrupador de contratos de uma operação).
 class Carteiras(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -187,7 +269,6 @@ class Carteiras(models.Model):
             ('export_carteiras', 'Can export')
         )
 
-from django.contrib import admin
 class UsuarioOrganizacao(models.Model):
     id = models.BigAutoField(primary_key=True)
     organizacao = models.ForeignKey(
@@ -221,6 +302,71 @@ class UsuarioOrganizacao(models.Model):
         permissions = (
             ('import_usuarioorganizacao', 'Can import'),
             ('export_usuarioorganizacao', 'Can export')
+        )
+
+class OrganizacaoRegrasCobranca(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    organizacao = models.ForeignKey(
+        'Organizacao',
+        on_delete=models.PROTECT,
+    )
+    atraso = models.IntegerField(
+        help_text="Dias em Atraso",
+        db_comment="Dias em Atraso",
+        verbose_name="Dias em Atraso",
+        validators=[
+            MinValueValidator(-30),
+            MaxValueValidator(3650),
+        ],
+        null=True,
+        blank=True,
+    )
+    SMS = 1
+    EMAIL = 2
+    WHATSAPP = 3
+    DISCADOR = 4
+    TIPO_ACAO_CHOICES = {
+        SMS: "SMS",
+        EMAIL: "Email",
+        WHATSAPP: "Whatsapp",
+        DISCADOR: "Discador",
+    }
+    tipo_acao = models.IntegerField(
+        help_text="Situação",
+        db_comment="Situação",
+        verbose_name="Situação",
+        choices=TIPO_ACAO_CHOICES,
+        default=SMS
+    )
+    SEM_TEXTO = 1
+    AVISO_PRE_VENCIMENTO = 2
+    COBRANCA_AMIGAVEL = 3
+    PROPOSTA_ACORDO = 4
+    MODELO_MENSAGEM_CHOICES = {
+        SEM_TEXTO: "Sem texto",
+        AVISO_PRE_VENCIMENTO: "Aviso pré-vencimento",
+        COBRANCA_AMIGAVEL: "Cobrança amigavel",
+        PROPOSTA_ACORDO: "Proposta de Acordo",
+    }
+    modelo_mensagem = models.IntegerField(
+        help_text="Modelo de Mensagem",
+        db_comment="Modelo de Mensagem",
+        verbose_name="Modelo de Mensagem",
+        choices=MODELO_MENSAGEM_CHOICES,
+        default=SEM_TEXTO
+    )
+
+    def __str__(self):
+        return f"{self.id}"
+    class Meta:
+        #abstract = True
+        db_table = "Organizacao_regras_cobranca"
+        verbose_name = "Regra de Cobrança"
+        verbose_name_plural = "Regras de Cobrança"
+        db_table_comment = "Regras de Cobrança"
+        permissions = (
+            ('import_organizacaoregrascobranca', 'Can import'),
+            ('export_organizacaoregrascobranca', 'Can export')
         )
 
 class Organizacao(models.Model):
@@ -541,6 +687,12 @@ class Contratos(models.Model):
         help_text="Devedor",
         db_comment="Devedor",
         verbose_name="Devedor",
+    )
+    produto = models.CharField(
+        max_length=300,
+        help_text="Produto",
+        db_comment="Produto",
+        verbose_name="Produto",
     )
 
 #     status
