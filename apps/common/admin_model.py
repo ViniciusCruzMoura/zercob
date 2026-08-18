@@ -256,3 +256,27 @@ def admin_model_download_files_as_zip_nothreads(itens_selecionados, _fields):
                         zipf.writestr(file_name, file_content)
     zip_buffer.seek(0)
     return zip_buffer
+
+def admin_model_save(self, ordered_methods=None, excluded_methods=None, *args, **kwargs):
+    ordered_methods = ordered_methods or []
+    excluded_methods = set(excluded_methods or [])
+    try:
+        for method_name in ordered_methods:
+            if method_name in excluded_methods:
+                continue
+            method = getattr(self, method_name, None)
+            if callable(method):
+                method()
+        for method_name in dir(self):
+            if (
+                method_name.startswith("update_")
+                and method_name not in ordered_methods
+                and method_name not in excluded_methods
+            ):
+                method = getattr(self, method_name)
+                if callable(method):
+                    method()
+    except Exception as err:
+        import traceback
+        traceback.print_exc()
+        print("FATAL ERROR admin_model_save:", err)

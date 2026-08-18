@@ -94,12 +94,9 @@ class DevedoresAdmin(ModelAdmin):
     list_display = (
         'nome_cliente',
         'cpf_cnpj',
-        'numero_contrato',
-        'saldo',
     )
     search_fields = ("id", "nome_cliente", "cpf_cnpj")
     inlines = [DevedoresContatosInline, DevedoresEnderecosInline]
-    currency_fields = ["saldo"]
     cpf_cnpj_fields = ["cpf_cnpj"]
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -201,27 +198,58 @@ class DevedoresNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
         """
         pass
 
+class PropostasParcelasInline(TabularInline):
+    model = PropostasParcelas
+    extra = 0
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
+#     readonly_fields = ['numero_parcela', 'data_vencimento', 'valor']
+@admin.register(Propostas)
+class PropostasAdmin(ModelAdmin):
+    search_fields = ("id",)
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
+    inlines = [PropostasParcelasInline]
+
 class ContratosParcelasInline(TabularInline):
     model = ContratosParcelas
     extra = 0
-    exclude = ('ativo', 'data_inclusao', 'data_alteracao', 'usuario_inclusao', 'usuario_alteracao')
-class PropostasInline(TabularInline):
-    model = Propostas
-    extra = 0
-#     tab = True
-    per_page = 1
+    exclude = ('ativo', 'data_inclusao', 'data_alteracao', 'usuario_inclusao', 'usuario_alteracao', 'valor_atualizado')
+    readonly_fields = ['display_valor_atualizado', 'status', 'atraso']
+    currency_fields = ["valor_original"]
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        admin_model_get_form_widget(formset.form, self, request, obj, **kwargs)
+        return formset
+    @admin.display(description="Valor (Juros + Multa)",ordering="valor_atualizado")
+    def display_valor_atualizado(self, obj):
+        return obj.display_valor_atualizado()
+# class PropostasInline(TabularInline):
+#     model = Propostas
+#     extra = 0
+#     per_page = 5
+#     exclude = ('ativo', 'data_inclusao', 'data_alteracao', 'usuario_inclusao', 'usuario_alteracao')
 @admin.register(Contratos)
 class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     search_fields = ("id",)  # add real searchable fields, e.g. "numero"
     autocomplete_fields = ("carteira", "devedor",)  # FK field on Contratos that points to Carteiras
-    inlines = [CarteirasNonrelatedInline, DevedoresNonrelatedInline, ContratosParcelasInline, PropostasInline]
+    inlines = [ContratosParcelasInline]#[CarteirasNonrelatedInline, DevedoresNonrelatedInline, ContratosParcelasInline]#, PropostasInline]
     list_display = (
+        'id',
         'devedor__nome_cliente',
         'devedor__cpf_cnpj',
-        'devedor__numero_contrato',
-        'devedor__saldo',
         'carteira__nome',
         'carteira__nome_responsavel',
     )
@@ -360,6 +388,7 @@ class CarteirasRegrasNegociacaoInline(StackedInline):
     model = CarteirasRegrasNegociacao
     extra = 1
     max_num = 1
+    tab = 1
     fields = ["a_vista", "parcelas", "juros", "multa", "desconto", "entrada_minima", "maximo_parcelas"]
     percentage_fields = ["juros", "multa", "desconto"]
     currency_fields = ["entrada_minima"]
