@@ -255,9 +255,8 @@ class Carteiras(models.Model):
 #     retencao_interacoes_dias
 
 
-
     def __str__(self):
-        return f"{self.id} - {self.nome_empresa_responsavel}"
+        return f"{self.id} - {self.nome}"
     class Meta:
         #abstract = True
         db_table = "carteiras"

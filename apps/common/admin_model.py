@@ -11,6 +11,23 @@ from django import forms
 
 from unfold.widgets import UnfoldAdminTextInputWidget
 
+class PhoneWidget(forms.TextInput):
+    class Media:
+        js = ("admin/js/phone_mask.js",)
+
+    def __init__(self, attrs=None):
+        attrs = attrs.copy() if attrs else {}
+
+        attrs.setdefault("autocomplete", "tel")
+        attrs.setdefault("inputmode", "tel")
+        attrs.setdefault("placeholder", "+55 xx 9xxxx-xxxx")
+
+        current_class = attrs.get("class", "")
+        if "phone-mask" not in current_class.split():
+            attrs["class"] = f"{current_class} phone-mask".strip()
+
+        super().__init__(attrs=attrs)
+
 class PercentageWidget(forms.TextInput):
     class Media:
         js = ("admin/js/percentage_mask.js",)
@@ -21,6 +38,7 @@ class PercentageWidget(forms.TextInput):
         attrs.setdefault("autocomplete", "off")
         attrs.setdefault("inputmode", "decimal")
         attrs.setdefault("class", "")
+        attrs.setdefault("placeholder", "%")
 
         if "percentage-mask" not in attrs["class"].split():
             attrs["class"] = (attrs["class"] + " percentage-mask").strip()
@@ -36,6 +54,7 @@ class BrazilianCpfCnpjWidget(forms.TextInput):
         if attrs:
             attrs.update({"autocomplete": "off"})
         attrs.setdefault("class", "")
+        attrs.setdefault("placeholder", "xxx.xxx.xxx-xx ou xx.xxx.xxx/xxxx-xx")
         if "cpf-cnpj-mask" not in attrs["class"].split():
             attrs["class"] = (attrs["class"] + " cpf-cnpj-mask").strip()
         super().__init__(attrs=attrs)
@@ -76,6 +95,12 @@ def admin_model_get_form_widget(form, self, request, obj=None, **kwargs):
         for field_name in self.percentage_fields:
             if field_name in form.base_fields:
                 form.base_fields[field_name].widget = PercentageWidget(
+                    attrs=form.base_fields[field_name].widget.attrs
+                )
+    if getattr(self, "phone_fields", None) and self.phone_fields:
+        for field_name in self.phone_fields:
+            if field_name in form.base_fields:
+                form.base_fields[field_name].widget = PhoneWidget(
                     attrs=form.base_fields[field_name].widget.attrs
                 )
 

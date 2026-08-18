@@ -99,6 +99,12 @@ class DevedoresAdmin(ModelAdmin):
     )
     search_fields = ("id", "nome_cliente", "cpf_cnpj")
     inlines = [DevedoresContatosInline, DevedoresEnderecosInline]
+    currency_fields = ["saldo"]
+    cpf_cnpj_fields = ["cpf_cnpj"]
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        return form
 
 # class DevedoresParecelasAdmin(admin.ModelAdmin):
 #     model = DevedoresParecelas
@@ -120,6 +126,13 @@ class CarteirasNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
 #     fields = ["nome_cliente", "cpf_cnpj"]  # Ignore property to display all fields
     extra = 0
     max_num = 1
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
 
      # 1. Prevent adding new rows
     def has_add_permission(self, request, obj=None):
@@ -130,8 +143,15 @@ class CarteirasNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
         return False
 
     # 3. Dynamically make all fields read-only
+#     def get_readonly_fields(self, request, obj=None):
+#         return [f.name for f in self.model._meta.fields]
     def get_readonly_fields(self, request, obj=None):
-        return [f.name for f in self.model._meta.fields]
+        excluded_fields = set(self.exclude or ())
+        return [
+            field.name
+            for field in self.model._meta.fields
+            if field.name not in excluded_fields
+        ]
 
     def get_form_queryset(self, obj):
         """
@@ -152,6 +172,7 @@ class DevedoresNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
 #     fields = ["nome_cliente", "cpf_cnpj"]  # Ignore property to display all fields
     extra = 0
     max_num = 1
+    per_page = 5
 
      # 1. Prevent adding new rows
     def has_add_permission(self, request, obj=None):
@@ -221,6 +242,23 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
 #         PropostasDataset,
 #     ]
 
+class OrganizacaoCarteirasInline(NonrelatedTabularInline):
+    model = Carteiras
+    extra = 1
+    fields = ["id", "nome", "responsavel", "nome_responsavel", "status", "data_inclusao", "ativo"]
+    per_page = 5
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]
+    def get_form_queryset(self, obj):
+        if obj and obj.id:
+            return self.model.objects.filter(organizacao_id=obj.id)
+        return self.model.objects.all()
+    def save_new_instance(self, parent, instance):
+        pass
 class OrganizacaoRegrasCobrancaInline(TabularInline):
     model = OrganizacaoRegrasCobranca
     extra = 0
@@ -280,12 +318,43 @@ class OrganizacaoAdmin(ModelAdmin):
         'usuario_alteracao',
     )
     list_display = ["cpf_cnpj", "razao_social", "nome_fantasia", "telefone", "email_institucional"]
-    inlines = [OrganizacaoRegrasCobrancaInline, UsuarioOrganizacao2Inline]
+    inlines = [OrganizacaoRegrasCobrancaInline, OrganizacaoCarteirasInline, UsuarioOrganizacao2Inline]
     cpf_cnpj_fields = ["cpf_cnpj"]
+    phone_fields = ["telefone"]
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         admin_model_get_form_widget(form, self, request, obj, **kwargs)
         return form
+
+class CarteirasContratosInline(NonrelatedTabularInline):
+    model = Contratos
+    extra = 0
+    per_page = 5
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
+    def has_add_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+    def get_readonly_fields(self, request, obj=None):
+        excluded_fields = set(self.exclude or ())
+        return [
+            field.name
+            for field in self.model._meta.fields
+            if field.name not in excluded_fields
+        ]
+    def get_form_queryset(self, obj):
+        if obj and obj.id:
+            return self.model.objects.filter(carteira_id=obj.id)
+        return self.model.objects.all()
+    def save_new_instance(self, parent, instance):
+        pass
 
 class CarteirasRegrasNegociacaoInline(StackedInline):
     model = CarteirasRegrasNegociacao
@@ -330,8 +399,13 @@ class CarteirasAdmin(ModelAdmin):
         'usuario_inclusao',
         'usuario_alteracao',
     )
+    list_display = (
+        'nome',
+        'nome_responsavel',
+        'organizacao__cpf_cnpj',
+    )
     #inlines = [ContratosInline]
-    inlines = [CarteirasRegrasNegociacaoInline]
+    inlines = [CarteirasRegrasNegociacaoInline, CarteirasContratosInline]
 
 # class ContratosInline(admin.TabularInline):
 #     model = Contratos
