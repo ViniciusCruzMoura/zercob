@@ -65,11 +65,20 @@ class PropostasAdmin(ModelAdmin):
 # class AcordosPagamentosInline(admin.TabularInline):
 #     model = AcordosPagamentos
 #     extra = 1
-# class AcordosParcelasInline(admin.TabularInline):
-#     model = AcordosParcelas
-#     extra = 1
-# class AcordosAdmin(admin.ModelAdmin):
-#     model = Acordos
+class AcordosParcelasInline(TabularInline):
+    model = AcordosParcelas
+    extra = 0
+    exclude = (
+        'ativo',
+        'data_inclusao',
+        'data_alteracao',
+        'usuario_inclusao',
+        'usuario_alteracao',
+    )
+
+@admin.register(Acordos)
+class AcordosAdmin(ModelAdmin):
+    inlines = [AcordosParcelasInline]
 #     inlines = [AcordosPagamentosInline, AcordosParcelasInline]
 #     list_display = (
 #         'devedor__nome_cliente',
@@ -220,6 +229,12 @@ class PropostasAdmin(ModelAdmin):
         'usuario_alteracao',
     )
     inlines = [PropostasParcelasInline]
+    list_display = (
+        "contrato",
+        "modalidade",
+        "qtd_parcelas",
+        "status",
+    )
 
 class ContratosParcelasInline(TabularInline):
     model = ContratosParcelas

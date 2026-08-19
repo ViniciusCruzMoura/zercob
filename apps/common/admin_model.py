@@ -9,8 +9,6 @@ from apps.common.bg import BackgroundTasks
 from decimal import Decimal
 from django import forms
 
-from unfold.widgets import UnfoldAdminTextInputWidget
-
 class PhoneWidget(forms.TextInput):
     class Media:
         js = ("admin/js/phone_mask.js",)
