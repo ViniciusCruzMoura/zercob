@@ -46,21 +46,21 @@ class ContratosTableSection(TableSection):
 #     def custom_field(self, instance):
 #         return instance.pk
 
-class PropostasAdmin(ModelAdmin):
-    list_display = ["data_inclusao", "decisao", "usuario_decisao", "observacao"]
-    def get_queryset(self, request):
-        # `extra_context` contains current changeform object
-        obj_id = self.extra_context.get("object")
-
-        # If we are on create object page display no results
-        if not obj_id:
-            return super().get_queryset(request).none()
-
-        # If there is a permission requirement, make sure that
-        # everything is properly handled here
-        return super().get_queryset(request).filter(
-            contrato__pk=obj_id
-        )
+# class PropostasAdmin(ModelAdmin):
+#     list_display = ["data_inclusao", "decisao", "usuario_decisao", "observacao"]
+#     def get_queryset(self, request):
+#         # `extra_context` contains current changeform object
+#         obj_id = self.extra_context.get("object")
+# 
+#         # If we are on create object page display no results
+#         if not obj_id:
+#             return super().get_queryset(request).none()
+# 
+#         # If there is a permission requirement, make sure that
+#         # everything is properly handled here
+#         return super().get_queryset(request).filter(
+#             contrato__pk=obj_id
+#         )
 
 # class AcordosPagamentosInline(admin.TabularInline):
 #     model = AcordosPagamentos
@@ -119,10 +119,10 @@ class DevedoresAdmin(ModelAdmin):
 # class AcordosPagamentosAdmin(admin.ModelAdmin):
 #     model = AcordosPagamentos
 
-class PropostasDataset(BaseDataset):
-    model = Propostas
-    model_admin = PropostasAdmin
-    #tab = True # Displays this dataset as tab
+# class PropostasDataset(BaseDataset):
+#     model = Propostas
+#     model_admin = PropostasAdmin
+#     #tab = True # Displays this dataset as tab
 
 # class DevedoresDataset(BaseDataset):
 #     model = Devedores
@@ -210,6 +210,7 @@ class DevedoresNonrelatedInline(NonrelatedTabularInline):  # NonrelatedStackedIn
 class PropostasParcelasInline(TabularInline):
     model = PropostasParcelas
     extra = 0
+    #min_num = 1
     exclude = (
         'ativo',
         'data_inclusao',
@@ -218,6 +219,15 @@ class PropostasParcelasInline(TabularInline):
         'usuario_alteracao',
     )
 #     readonly_fields = ['numero_parcela', 'data_vencimento', 'valor']
+    currency_fields = ["valor"]
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        admin_model_get_form_widget(formset.form, self, request, obj, **kwargs)
+        return formset
+class PropostaContratoInline(TabularInline):
+    model = PropostaContrato
+    extra = 0
+    min_num = 1
 @admin.register(Propostas)
 class PropostasAdmin(ModelAdmin):
     search_fields = ("id",)
@@ -228,13 +238,18 @@ class PropostasAdmin(ModelAdmin):
         'usuario_inclusao',
         'usuario_alteracao',
     )
-    inlines = [PropostasParcelasInline]
+    inlines = [PropostaContratoInline, PropostasParcelasInline]
     list_display = (
-        "contrato",
+        "devedor",
         "modalidade",
         "qtd_parcelas",
         "status",
     )
+    currency_fields = ["entrada"]
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        return form
 
 class ContratosParcelasInline(TabularInline):
     model = ContratosParcelas
