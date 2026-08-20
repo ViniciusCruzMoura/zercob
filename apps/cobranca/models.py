@@ -693,6 +693,7 @@ class ContratosParcelas(models.Model):
             self.valor_atualizado = self.valor_original + multa + juros
 
     def save(self, *args, **kwargs):
+        #if self._state.adding: print("INSERT")
         from apps.common.admin_model import admin_model_save
         admin_model_save(self, [], [], *args, **kwargs)
         super().save(*args, **kwargs)
