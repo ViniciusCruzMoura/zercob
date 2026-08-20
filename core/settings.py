@@ -204,7 +204,7 @@ UNFOLD = {
     "SITE_TITLE": "Zerou Cobrança",
     "SITE_HEADER": "Appears in sidebar at the top",
     "SITE_SUBHEADER": "Appears under SITE_HEADER",
-    "SITE_VERSION": "0.1.0",
+    "SITE_VERSION": "26.08.01",
 #     "SITE_DROPDOWN": [
 #         {
 #             "icon": "diamond",
@@ -258,43 +258,298 @@ UNFOLD = {
 #     "SCRIPTS": [
 #         lambda request: static("js/script.js"),
 #     ],
-    "BORDER_RADIUS": "6px",
+#     "BORDER_RADIUS": "6px",
+    "BORDER_RADIUS": "8px",
+#     "COLORS": {
+#         "base": {
+#             "50": "oklch(98.5% .002 247.839)",
+#             "100": "oklch(96.7% .003 264.542)",
+#             "200": "oklch(92.8% .006 264.531)",
+#             "300": "oklch(87.2% .01 258.338)",
+#             "400": "oklch(70.7% .022 261.325)",
+#             "500": "oklch(55.1% .027 264.364)",
+#             "600": "oklch(44.6% .03 256.802)",
+#             "700": "oklch(37.3% .034 259.733)",
+#             "800": "oklch(27.8% .033 256.848)",
+#             "900": "oklch(21% .034 264.665)",
+#             "950": "oklch(13% .028 261.692)",
+#         },
+#         "primary": {
+#             "50": "oklch(97.7% .014 308.299)",
+#             "100": "oklch(94.6% .033 307.174)",
+#             "200": "oklch(90.2% .063 306.703)",
+#             "300": "oklch(82.7% .119 306.383)",
+#             "400": "oklch(71.4% .203 305.504)",
+#             "500": "oklch(62.7% .265 303.9)",
+#             #"600": "#35A77A",
+#             "600": "oklch(55.8% .288 302.321)",
+#             "700": "oklch(49.6% .265 301.924)",
+#             "800": "oklch(43.8% .218 303.724)",
+#             "900": "oklch(38.1% .176 304.987)",
+#             "950": "oklch(29.1% .149 302.717)",
+#         },
+#         "font": {
+#             "subtle-light": "var(--color-base-500)",  # text-base-500
+#             "subtle-dark": "var(--color-base-400)",  # text-base-400
+#             "default-light": "var(--color-base-600)",  # text-base-600
+#             "default-dark": "var(--color-base-300)",  # text-base-300
+#             "important-light": "var(--color-base-900)",  # text-base-900
+#             "important-dark": "var(--color-base-100)",  # text-base-100
+#         },
+#     },
     "COLORS": {
+        # Neutral / structural palette
+        # Based on:
+        # #F5F7F6 - Off-white
+        # #263238 - Grafite
         "base": {
-            "50": "oklch(98.5% .002 247.839)",
-            "100": "oklch(96.7% .003 264.542)",
-            "200": "oklch(92.8% .006 264.531)",
-            "300": "oklch(87.2% .01 258.338)",
-            "400": "oklch(70.7% .022 261.325)",
-            "500": "oklch(55.1% .027 264.364)",
-            "600": "oklch(44.6% .03 256.802)",
-            "700": "oklch(37.3% .034 259.733)",
-            "800": "oklch(27.8% .033 256.848)",
-            "900": "oklch(21% .034 264.665)",
-            "950": "oklch(13% .028 261.692)",
+            "50": "oklch(97.4% 0.002 165.076)",   # #F5F7F6 - Off-white
+            "100": "oklch(94.5% 0.006 170.442)",
+            "200": "oklch(89.4% 0.010 171.771)",
+            "300": "oklch(81.0% 0.014 174.064)",
+            "400": "oklch(66.9% 0.023 174.617)",
+            "500": "oklch(53.8% 0.024 174.277)",
+            "600": "oklch(45.4% 0.024 176.476)",
+            "700": "oklch(38.2% 0.023 170.222)",
+            "800": "oklch(30.9% 0.019 229.784)",  # #263238 - Grafite
+            "900": "oklch(26.9% 0.018 227.452)",
+            "950": "oklch(19.9% 0.012 225.894)",
         },
+
+        # Main ZEROU interface palette
+        #
+        # 600 = #247BA0 Azul Solução
+        # 900 = #123B5D Azul Profundo
+        #
+        # This makes navigation/buttons/interface elements use
+        # Azul Solução while stronger/darker states use Azul Profundo.
         "primary": {
-            "50": "oklch(97.7% .014 308.299)",
-            "100": "oklch(94.6% .033 307.174)",
-            "200": "oklch(90.2% .063 306.703)",
-            "300": "oklch(82.7% .119 306.383)",
-            "400": "oklch(71.4% .203 305.504)",
-            "500": "oklch(62.7% .265 303.9)",
-            #"600": "#35A77A",
-            "600": "oklch(55.8% .288 302.321)",
-            "700": "oklch(49.6% .265 301.924)",
-            "800": "oklch(43.8% .218 303.724)",
-            "900": "oklch(38.1% .176 304.987)",
-            "950": "oklch(29.1% .149 302.717)",
+            "50": "oklch(97.5% 0.007 219.559)",
+            "100": "oklch(94.6% 0.016 221.080)",
+            "200": "oklch(89.5% 0.033 221.305)",
+            "300": "oklch(80.7% 0.061 219.293)",
+            "400": "oklch(69.4% 0.088 222.384)",
+            "500": "oklch(60.5% 0.101 227.891)",
+            "600": "oklch(54.9% 0.098 231.147)",  # #247BA0
+            "700": "oklch(47.2% 0.085 232.775)",
+            "800": "oklch(40.4% 0.076 238.017)",
+            "900": "oklch(34.2% 0.075 247.409)",  # #123B5D
+            "950": "oklch(24.9% 0.050 247.036)",
         },
+
         "font": {
-            "subtle-light": "var(--color-base-500)",  # text-base-500
-            "subtle-dark": "var(--color-base-400)",  # text-base-400
-            "default-light": "var(--color-base-600)",  # text-base-600
-            "default-dark": "var(--color-base-300)",  # text-base-300
-            "important-light": "var(--color-base-900)",  # text-base-900
-            "important-dark": "var(--color-base-100)",  # text-base-100
+            "subtle-light": "var(--color-base-500)",
+            "subtle-dark": "var(--color-base-400)",
+
+            # Grafite-oriented body text
+            "default-light": "var(--color-base-800)",
+            "default-dark": "var(--color-base-200)",
+
+            "important-light": "var(--color-base-950)",
+            "important-dark": "var(--color-base-50)",
         },
+    },
+    "SIDEBAR": {
+#         "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": _("Visão Geral"),
+                "separator": False,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Dashboard"),
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                ],
+            },
+
+            {
+                "title": _("Cobrança"),
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Devedores"),
+                        "icon": "person",
+                        "link": reverse_lazy("admin:apps_cobranca_devedores_changelist"),
+                    },
+                    {
+                        "title": _("Propostas"),
+                        "icon": "request_quote",
+                        "link": reverse_lazy("admin:apps_cobranca_propostas_changelist"),
+                    },
+                    {
+                        "title": _("Contratos"),
+                        "icon": "contract",
+                        "link": reverse_lazy("admin:apps_cobranca_contratos_changelist"),
+                    },
+                    {
+                        "title": _("Acordos"),
+                        "icon": "handshake",
+                        "link": reverse_lazy("admin:apps_cobranca_acordos_changelist"),
+                    },
+                ],
+            },
+
+            {
+                "title": _("Carteiras"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Carteiras"),
+                        "icon": "account_balance_wallet",
+                        "link": reverse_lazy("admin:apps_cobranca_carteiras_changelist"),
+                    },
+#                     {
+#                         "title": _("Regras de Negociação"),
+#                         "icon": "percent",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_carteirasregrasnegociacao_changelist"
+#                         ),
+#                     },
+                ],
+            },
+
+            {
+                "title": _("Organizações"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Organizações"),
+                        "icon": "business",
+                        "link": reverse_lazy("admin:apps_cobranca_organizacao_changelist"),
+                    },
+#                     {
+#                         "title": _("Regras de Cobrança"),
+#                         "icon": "rule",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_organizacaoregrascobranca_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Usuários da Organização"),
+#                         "icon": "manage_accounts",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_usuarioorganizacao_changelist"
+#                         ),
+#                     },
+                ],
+            },
+
+            {
+                "title": _("Dados Auxiliares"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+#                     {
+#                         "title": _("Contatos dos Devedores"),
+#                         "icon": "contact_phone",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_devedorescontatos_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Endereços dos Devedores"),
+#                         "icon": "location_on",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_devedoresenderecos_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Parcelas dos Contratos"),
+#                         "icon": "receipt_long",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_contratosparcelas_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Contratos das Propostas"),
+#                         "icon": "link",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_propostacontrato_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Parcelas das Propostas"),
+#                         "icon": "payments",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_propostasparcelas_changelist"
+#                         ),
+#                     },
+#                     {
+#                         "title": _("Parcelas dos Acordos"),
+#                         "icon": "calendar_month",
+#                         "link": reverse_lazy(
+#                             "admin:apps_cobranca_acordosparcelas_changelist"
+#                         ),
+#                     },
+                ],
+            },
+
+            {
+                "title": _("Administração"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Usuários"),
+                        "icon": "group",
+                        "link": reverse_lazy(
+                            "admin:auth_user_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Grupos"),
+                        "icon": "groups",
+                        "link": reverse_lazy(
+                            "admin:auth_group_changelist"
+                        ),
+                    },
+                ],
+            },
+
+            {
+                "title": _("Orquestrador"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Tarefas Agendadas"),
+                        "icon": "schedule",
+                        "link": reverse_lazy(
+                            "admin:django_celery_beat_periodictask_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Resultado das Tarefas"),
+                        "icon": "task_alt",
+                        "link": reverse_lazy(
+                            "admin:django_celery_results_taskresult_changelist"
+                        ),
+                    },
+                ],
+            },
+
+            {
+                "title": _("Sistema"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Auditoria"),
+                        "icon": "history",
+                        "link": reverse_lazy(
+                            "admin:auditlog_logentry_changelist"
+                        ),
+                    },
+                ],
+            },
+        ],
     },
 #     "SIDEBAR": {
 #         "show_search": False,  # Search in applications and models names

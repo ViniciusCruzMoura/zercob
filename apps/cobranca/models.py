@@ -5,6 +5,28 @@ from django.contrib.auth.models import User
 from datetime import datetime
 from datetime import date, timedelta
 from django.core.exceptions import ValidationError
+from dateutil.relativedelta import relativedelta
+
+# TODO 202608201544 colocar no __init__ igual o sisjur
+from django_celery_beat.apps import BeatConfig
+from django_celery_results.apps import CeleryResultConfig
+from django_celery_results.models import TaskResult
+from django_celery_beat.models import PeriodicTask
+
+BeatConfig.verbose_name = "Agendador"
+CeleryResultConfig.verbose_name = "Execuções"
+TaskResult._meta.verbose_name_plural = "Resultado das Tarefas"
+TaskResult._meta.verbose_name='Resultado da Tarefa'
+PeriodicTask._meta.verbose_name_plural = "Tarefas Agendadas"
+PeriodicTask._meta.verbose_name = "Tarefa Agendada"
+# try:
+#     from django_celery_beat.models import CrontabSchedule
+#     from django_celery_results.models import GroupResult
+#     from django.contrib import admin
+#     admin.site.unregister(GroupResult)
+#     admin.site.unregister(CrontabSchedule)
+# except admin.sites.NotRegistered:
+#     pass
 
 # class OperacoesParametros(models.Model):
 #     id = models.BigAutoField(primary_key=True)
@@ -63,11 +85,12 @@ class CarteirasRegrasNegociacao(models.Model):
         blank=True,
     )
     entrada_minima = models.IntegerField(
-        help_text="Entrada Minima para o Acordo",
-        db_comment="Entrada Minima para o Acordo",
-        verbose_name="Entrada Minima para o Acordo",
+        help_text="% Entrada Minima (parcelado)",
+        db_comment="% Entrada Minima (parcelado)",
+        verbose_name="% Entrada Minima (parcelado)",
         validators=[
             MinValueValidator(0),
+            MaxValueValidator(100),
         ],
         null=True,
         blank=True,
@@ -967,11 +990,12 @@ class Propostas(models.Model):
         default=A_VISTA,
     )
     entrada = models.IntegerField(
-        help_text="Entrada para o Acordo",
-        db_comment="Entrada para o Acordo",
-        verbose_name="Entrada para o Acordo",
+        help_text="% Entrada",
+        db_comment="% Entrada",
+        verbose_name="% Entrada",
         validators=[
             MinValueValidator(0),
+            MaxValueValidator(100),
         ],
         null=True,
         blank=True,
@@ -1008,7 +1032,7 @@ class Propostas(models.Model):
         default=RASCUNHO
     )
 
-    def trigger_before_insert_or_updatre_set_parcelas(self):
+    def trigger_before_insert_or_update_set_parcelas(self):
         if self.modalidade == self.A_VISTA:
             self.entrada = 0
             self.qtd_parcelas = 1
@@ -1046,25 +1070,24 @@ class Propostas(models.Model):
                 soma_das_parcelas += parcela.valor_atualizado
             soma_de_todas_as_parcelas_de_todos_os_contratos += soma_das_parcelas
 
-#         parcelas = ContratosParcelas.objects.filter(contrato_id=self.contrato.id)
-#         soma_valor_atualizado = 0
-#         for parcela in parcelas:
-#             soma_valor_atualizado += parcela.valor_atualizado
         soma_valor_atualizado = soma_de_todas_as_parcelas_de_todos_os_contratos
 
         if self.modalidade == self.PARCELADO and self.qtd_parcelas:
+            valor_entrada = (soma_valor_atualizado * (self.entrada/100))
+
             PropostasParcelas.objects.create(
                 proposta=self,
                 numero_parcela=0,
                 data_vencimento=date.today() + timedelta(days=3),
-                valor=self.entrada
+                valor=valor_entrada
             )
-            soma_valor_atualizado = (soma_valor_atualizado - self.entrada) / self.qtd_parcelas
+
+            soma_valor_atualizado = ( soma_valor_atualizado - valor_entrada ) / self.qtd_parcelas
             for i in range(self.qtd_parcelas):
                 PropostasParcelas.objects.create(
                     proposta=self,
                     numero_parcela=i+1,
-                    data_vencimento=date.today() + timedelta(days=30*(i+1) if i+1 != 1 else 33*(i+1)),
+                    data_vencimento=(date.today() + relativedelta(months=(i+1))) if i+1 != 1 else (date.today() + timedelta(days=34)),
                     valor=soma_valor_atualizado
                 )
         elif self.modalidade == self.A_VISTA:
@@ -1089,6 +1112,9 @@ class Propostas(models.Model):
         if self.status == self.ACEITO:
             print("TODO 202608200044 inserir registro no acordos caso não exista")
 
+    # TODO 202608201522 validar se já existe proposta já aceita
+    # se ja existe então não pode ter outro acordo
+
     def validate_entrada(self):
         if self.modalidade == self.PARCELADO:
             contratos_da_proposta = PropostaContrato.objects.filter(proposta_id=self.id)
@@ -1101,9 +1127,8 @@ class Propostas(models.Model):
                 .last()
             )
             if self.entrada < regras_negociacao.entrada_minima:
-                from apps.common.guias import guias_formatar_valor
                 raise ValidationError({
-                    "entrada": f"A entrada deve ser maior ou igual a entrada minima de {guias_formatar_valor(regras_negociacao.entrada_minima)}"
+                    "entrada": f"A entrada deve ser maior ou igual a entrada minima de {regras_negociacao.entrada_minima}%"
                 })
 
     def validate_qtd_parcelas(self):
@@ -1134,7 +1159,7 @@ class Propostas(models.Model):
     def save(self, *args, **kwargs):
         from apps.common.admin_model import admin_model_save
         admin_model_save(self, [], [], *args, **kwargs)
-        self.trigger_before_insert_or_updatre_set_parcelas()
+        self.trigger_before_insert_or_update_set_parcelas()
         super().save(*args, **kwargs)
         self.trigger_after_insert_or_update_calc_parcelas()
         self.trigger_after_insert_or_update_do_acordo()

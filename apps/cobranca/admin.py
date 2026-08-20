@@ -1,4 +1,5 @@
 from django.contrib import admin
+from datetime import datetime
 from apps.cobranca.models import *
 from import_export.admin import ImportExportModelAdmin
 
@@ -14,6 +15,10 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 
 from apps.common.admin_model import admin_model_get_form_widget
+from apps.common.guias import guias_formatar_valor
+
+from django.urls import path, reverse
+from django.http import JsonResponse
 
 # MOD USER
 admin.site.unregister(User)
@@ -77,8 +82,22 @@ class AcordosParcelasInline(TabularInline):
     )
 
 @admin.register(Acordos)
-class AcordosAdmin(ModelAdmin):
+class AcordosAdmin(ImportExportModelAdmin, ModelAdmin):
     inlines = [AcordosParcelasInline]
+    search_fields = (
+        "id", 
+        "devedor__nome_cliente",
+        "devedor__cpf_cnpj",
+    )
+    list_display = (
+        "id",
+        "devedor__nome_cliente",
+        "devedor__cpf_cnpj",
+        "status",
+#         "numero_parcela",
+        "data_vencimento",
+        "valor",
+    )
 #     inlines = [AcordosPagamentosInline, AcordosParcelasInline]
 #     list_display = (
 #         'devedor__nome_cliente',
@@ -89,28 +108,6 @@ class AcordosAdmin(ModelAdmin):
 # class DevedoresParecelasInline(admin.TabularInline):
 #     model = DevedoresParecelas
 
-class DevedoresContatosInline(TabularInline):
-    model = DevedoresContatos
-    extra = 1
-    exclude = ['observacao']
-class DevedoresEnderecosInline(TabularInline):
-    model = DevedoresEnderecos
-    extra = 1
-    exclude = ['latitude', 'longitude']
-class DevedoresAdmin(ModelAdmin):
-    model = Devedores
-#     inlines = [DevedoresParecelasInline]
-    list_display = (
-        'nome_cliente',
-        'cpf_cnpj',
-    )
-    search_fields = ("id", "nome_cliente", "cpf_cnpj")
-    inlines = [DevedoresContatosInline, DevedoresEnderecosInline]
-    cpf_cnpj_fields = ["cpf_cnpj"]
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        admin_model_get_form_widget(form, self, request, obj, **kwargs)
-        return form
 
 # class DevedoresParecelasAdmin(admin.ModelAdmin):
 #     model = DevedoresParecelas
@@ -228,8 +225,34 @@ class PropostaContratoInline(TabularInline):
     model = PropostaContrato
     extra = 0
     min_num = 1
+    # TODO 202608201220 o contrato tem que pertencer ao devedor 
+    # TODO 202608201220 filtrar para mostrar apenas contratos do devedor
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+
+        devedor_id = (
+            getattr(obj, "devedor_id", None)
+            or request.POST.get("devedor")
+            or request.GET.get("devedor")
+        )
+
+        if "contrato" in formset.form.base_fields:
+            if devedor_id:
+                formset.form.base_fields["contrato"].queryset = (
+                    Contratos.objects.filter(devedor_id=devedor_id)
+                )
+            else:
+                formset.form.base_fields["contrato"].queryset = (
+                    Contratos.objects.none()
+                )
+
+        return formset
 @admin.register(Propostas)
 class PropostasAdmin(ModelAdmin):
+    class Media:
+        js = (
+            "admin/js/propostas_contratos.js",
+        )
     search_fields = ("id",)
     exclude = (
         'ativo',
@@ -240,15 +263,52 @@ class PropostasAdmin(ModelAdmin):
     )
     inlines = [PropostaContratoInline, PropostasParcelasInline]
     list_display = (
-        "devedor",
+        "devedor__nome_cliente",
+        "devedor__cpf_cnpj",
         "modalidade",
         "qtd_parcelas",
         "status",
     )
-    currency_fields = ["entrada"]
+    percentage_fields = ["entrada"]
+    conditional_fields = {
+        "entrada": f"modalidade == {Propostas.PARCELADO}",
+        "qtd_parcelas": f"modalidade == {Propostas.PARCELADO}",
+    }
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "contratos-por-devedor/",
+                self.admin_site.admin_view(self.contratos_por_devedor),
+                name="cobranca_propostas_contratos_por_devedor",
+            ),
+        ]
+        return custom_urls + urls
+    def contratos_por_devedor(self, request):
+        devedor_id = request.GET.get("devedor_id")
+        if not devedor_id:
+            return JsonResponse({"results": []})
+        contratos = Contratos.objects.filter(
+            devedor_id=devedor_id
+        )
+        return JsonResponse({
+            "results": [
+                {
+                    "id": contrato.id,
+                    "text": str(contrato),
+                }
+                for contrato in contratos
+            ]
+        })
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        # para adicionar o filtro dinamico no campo de contratos 
+        form.base_fields["devedor"].widget.attrs[
+            "data-contratos-url"
+        ] = reverse(
+            "admin:cobranca_propostas_contratos_por_devedor"
+        )
         return form
 
 class ContratosParcelasInline(TabularInline):
@@ -278,10 +338,12 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
     inlines = [ContratosParcelasInline]#[CarteirasNonrelatedInline, DevedoresNonrelatedInline, ContratosParcelasInline]#, PropostasInline]
     list_display = (
         'id',
-        'devedor__nome_cliente',
-        'devedor__cpf_cnpj',
-        'carteira__nome',
-        'carteira__nome_responsavel',
+        'display_nome_devedor',
+        'display_cpf_cnpj_devedor',
+        'display_nome_carteira',
+        'display_qtd_parcelas_vencidas',
+        'display_maior_atraso',
+        'display_valor_total_parcelas_vencidas',
     )
     exclude = (
         'ativo',
@@ -290,6 +352,37 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
         'usuario_inclusao',
         'usuario_alteracao',
     )
+    # TODO 202608201027 colocar isso dentro do model para poder
+    # reutilizar
+    @admin.display(description="Devedor",ordering="devedor__nome_cliente")
+    def display_nome_devedor(self, obj):
+        return obj.devedor.nome_cliente
+    @admin.display(description="CPF/CNPJ",ordering="devedor__cpf_cnpj")
+    def display_cpf_cnpj_devedor(self, obj):
+        return obj.devedor.cpf_cnpj
+    @admin.display(description="Carteira",ordering="carteira__nome")
+    def display_nome_carteira(self, obj):
+        return obj.carteira.nome
+    @admin.display(description="Parcelas (vencidos)",ordering="")
+    def display_qtd_parcelas_vencidas(self, obj):
+        return f"{ContratosParcelas.objects.filter(contrato_id=obj.id, data_vencimento__lt=datetime.now().date()).count()}"
+    @admin.display(description="Atraso (dias)",ordering="")
+    def display_maior_atraso(self, obj):
+        maior_atraso = 0
+        parcelas = ContratosParcelas.objects.filter(contrato_id=obj.id, data_vencimento__lt=datetime.now().date())
+        for parcela in parcelas:
+            if parcela.atraso > maior_atraso:
+                maior_atraso = parcela.atraso
+        return f"{maior_atraso}"
+    @admin.display(description="Débito (vencidos)",ordering="")
+    def display_valor_total_parcelas_vencidas(self, obj):
+        valor_total = 0
+        parcelas = ContratosParcelas.objects.filter(contrato_id=obj.id, data_vencimento__lt=datetime.now().date())
+        for parcela in parcelas:
+            valor_total += parcela.valor_atualizado
+        return guias_formatar_valor(valor_total)
+    #display_valor_total_parcelas_vencidas.short_description = "Debito"
+    #display_valor_total_parcelas_vencidas.admin_order_field = "debito"
 #     list_sections = [
 #         ContratosTableSection,
 #     ]
@@ -299,6 +392,97 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
 #     change_form_datasets = [
 #         PropostasDataset,
 #     ]
+    def get_queryset(self, request):
+        # isso é para funcionar o relacionamento de dataset
+        if getattr(self, "extra_context", None) and self.extra_context:
+            devedor_id = self.extra_context.get("object")
+            if not devedor_id:
+                return super().get_queryset(request).none()
+            return super().get_queryset(request).filter(devedor_id=devedor_id)
+        return super().get_queryset(request)
+class DevedoresContratosDataset(BaseDataset):
+    model_admin = ContratosAdmin
+    model = Contratos
+    tab = True
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         
+#         # Filter data based on user or conditions
+#         if not request.user.is_superuser:
+#             qs = qs.filter(user=request.user)
+#             
+#         # Optimize performance
+#         return qs.select_related("category").order_by("-created_at")
+class DevedoresContatosInline(TabularInline):
+    model = DevedoresContatos
+    extra = 1
+    exclude = ['observacao']
+class DevedoresEnderecosInline(TabularInline):
+    model = DevedoresEnderecos
+    extra = 1
+    exclude = ['latitude', 'longitude']
+class DevedoresAdmin(ImportExportModelAdmin, ModelAdmin):
+    model = Devedores
+#     inlines = [DevedoresParecelasInline]
+    list_display = (
+        'nome_cliente',
+        'cpf_cnpj',
+        "display_qtd_parcelas_vencidas",
+        "display_maior_atraso",
+        "display_valor_total_parcelas_vencidas",
+        "display_qtd_contratos",
+    )
+    search_fields = ("id", "nome_cliente", "cpf_cnpj")
+    inlines = [DevedoresContatosInline, DevedoresEnderecosInline]
+    change_form_datasets = [
+        DevedoresContratosDataset,
+    ]
+    cpf_cnpj_fields = ["cpf_cnpj"]
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        return form
+    @admin.display(description="Parcelas (vencidos)",ordering="")
+    def display_qtd_parcelas_vencidas(self, obj):
+        qtd_parcelas_vencidas = 0
+        contratos = Contratos.objects.filter(devedor_id=obj.id)
+        for contrato in contratos:
+            parcelas = ContratosParcelas.objects.filter(
+                contrato_id=contrato.id,
+                data_vencimento__lt=datetime.now().date()
+            )
+            qtd_parcelas_vencidas += parcelas.count()
+        return qtd_parcelas_vencidas
+    @admin.display(description="Atraso (dias)",ordering="")
+    def display_maior_atraso(self, obj):
+        # TODO 202608201233 proc_calc_maior_atraso_multicontratos(in_devedor_id)
+        # TODO 202608201234 vw_get_contratos_vencidos_by_devedor(in_devedor_id)
+        maior_atraso = 0
+        contratos = Contratos.objects.filter(devedor_id=obj.id)
+        for contrato in contratos:
+            parcelas = ContratosParcelas.objects.filter(
+                contrato_id=contrato.id,
+                data_vencimento__lt=datetime.now().date()
+            )
+            for parcela in parcelas:
+                if parcela.atraso > maior_atraso:
+                    maior_atraso = parcela.atraso
+        return maior_atraso
+    @admin.display(description="Débito (vencidos)",ordering="")
+    def display_valor_total_parcelas_vencidas(self, obj):
+        valor_total = 0
+        contratos = Contratos.objects.filter(devedor_id=obj.id)
+        for contrato in contratos:
+            parcelas = ContratosParcelas.objects.filter(
+                contrato_id=contrato.id,
+                data_vencimento__lt=datetime.now().date()
+            )
+            for parcela in parcelas:
+                valor_total += parcela.valor_atualizado
+        return guias_formatar_valor(valor_total)
+    @admin.display(description="Contratos (com debito)",ordering="")
+    def display_qtd_contratos(self, obj):
+        return Contratos.objects.filter(devedor_id=obj.id).count()
 
 class OrganizacaoCarteirasInline(NonrelatedTabularInline):
     model = Carteiras
@@ -420,8 +604,7 @@ class CarteirasRegrasNegociacaoInline(StackedInline):
     max_num = 1
     tab = 1
     fields = ["a_vista", "parcelas", "juros", "multa", "desconto", "entrada_minima", "maximo_parcelas"]
-    percentage_fields = ["juros", "multa", "desconto"]
-    currency_fields = ["entrada_minima"]
+    percentage_fields = ["juros", "multa", "desconto", "entrada_minima"]
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
 #         original_init = formset.form.__init__

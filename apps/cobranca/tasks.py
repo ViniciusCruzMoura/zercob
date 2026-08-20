@@ -6,7 +6,7 @@ def task_contratos_atualizar_atraso():
 
     organizacoes = Organizacao.objects.all()
     for organizacao in organizacoes:
-        carteiras organizacao.carteiras.all()
+        carteiras = organizacao.carteiras.all()
         for carteira in carteiras:
             contratos = carteira.contratos.all()
             for contrato in contratos:

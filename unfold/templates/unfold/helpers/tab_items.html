@@ -13,7 +13,8 @@
 
             {% if inlines_list or datasets_list %}
                 <a href="#general" x-on:click="activeTab = 'general'" x-bind:class="{'active': activeTab == 'general'}">
-                    {% trans "General" %}
+                    {% comment %} {% trans "General" %} {% endcomment %}
+                    {% trans "Geral" %}
 
                     {% include "unfold/helpers/tab_error_count.html" with error_count=error_count %}
                 </a>
