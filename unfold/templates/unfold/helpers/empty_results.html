@@ -11,11 +11,17 @@
     {% endif %}
 
     <h2 class="font-semibold mb-1 text-xl text-font-important-light tracking-tight dark:text-font-important-dark">
+        {% comment %}
         {% trans "No results found" %}
+        {% endcomment %}
+        {% trans "Nenhum resultado encontrado" %}
     </h2>
 
     <p class="mb-6 text-center">
+        {% comment %}
         {% trans "This page yielded into no results. Create a new item or reset your filters." %}
+        {% endcomment %}
+        {% trans "Esta página não retornou resultados. Crie um novo item ou redefina seus filtros." %}
     </p>
 
     {% if has_add_permission or cl.has_filters %}
@@ -29,7 +35,10 @@
 
             {% if cl.has_filters or cl.query %}
                 <a href="?" class="border border-base-200 flex flex-row font-medium gap-2 group/button h-[38px] items-center justify-center px-3 py-2 rounded-default w-full hover:text-primary-600 lg:w-auto dark:border-base-700 dark:hover:bg-base-900 dark:hover:text-primary-500">
+                    {% comment %}
                     <span class="material-symbols-outlined ml-1">filter_list_off</span> {% trans "Reset filters" %}
+                    {% endcomment %}
+                    <span class="material-symbols-outlined ml-1">filter_list_off</span> {% trans "Limpar filtros" %}
                 </a>
             {% endif %}
         </div>

@@ -222,7 +222,8 @@ class ModelAdmin(
         request: HttpRequest,
         default_choices: list[tuple[str, str]] = BLANK_CHOICE_DASH,
     ) -> list[tuple[str, str]]:
-        default_choices = [("", _("Select action"))]
+        #default_choices = [("", _("Select action"))]
+        default_choices = [("", _("Selecione uma ação"))]
         return super().get_action_choices(request, default_choices)
 
     @display(description=mark_safe(checkbox.render("action_toggle_all", 1)))

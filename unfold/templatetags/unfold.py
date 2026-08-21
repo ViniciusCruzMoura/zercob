@@ -749,7 +749,8 @@ def header_title(context: RequestContext) -> str:
             if isinstance(user, AbstractUser):
                 username = user.get_short_name() or user.get_username()
 
-        parts.append({"title": f"{_('Welcome')} {username}"})
+        #parts.append({"title": f"{_('Welcome')} {username}"})
+        parts.append({"title": f"{_('Bem vindo')} {username}"})
 
     return render_to_string(
         "unfold/helpers/header_title.html",

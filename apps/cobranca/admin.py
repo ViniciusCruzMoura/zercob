@@ -1,6 +1,11 @@
 from django.contrib import admin
 from datetime import datetime
-from apps.cobranca.models import *
+from apps.cobranca.models.organizacao import *
+from apps.cobranca.models.acordo import *
+from apps.cobranca.models.devedor import *
+from apps.cobranca.models.carteira import *
+from apps.cobranca.models.proposta import *
+from apps.cobranca.models.contrato import *
 from import_export.admin import ImportExportModelAdmin
 
 from unfold.admin import ModelAdmin
@@ -28,6 +33,7 @@ class UsuarioOrganizacaoInline(StackedInline):
     model = UsuarioOrganizacao
     extra = 1
     max_num = 1
+    autocomplete_fields = ['organizacao']
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     inlines = [UsuarioOrganizacaoInline]
@@ -365,9 +371,11 @@ class ContratosAdmin(ImportExportModelAdmin, ModelAdmin):
         return obj.carteira.nome
     @admin.display(description="Parcelas (vencidos)",ordering="")
     def display_qtd_parcelas_vencidas(self, obj):
+        # vw_parcelas_vencidas_por_contrato(contrato_id)
         return f"{ContratosParcelas.objects.filter(contrato_id=obj.id, data_vencimento__lt=datetime.now().date()).count()}"
     @admin.display(description="Atraso (dias)",ordering="")
     def display_maior_atraso(self, obj):
+        # vw_maior_atraso_por_contrato(contrato_id)
         maior_atraso = 0
         parcelas = ContratosParcelas.objects.filter(contrato_id=obj.id, data_vencimento__lt=datetime.now().date())
         for parcela in parcelas:
@@ -573,6 +581,7 @@ class CarteirasContratosInline(NonrelatedTabularInline):
     model = Contratos
     extra = 0
     per_page = 5
+    tab = 1
     exclude = (
         'ativo',
         'data_inclusao',
@@ -600,9 +609,9 @@ class CarteirasContratosInline(NonrelatedTabularInline):
 
 class CarteirasRegrasNegociacaoInline(StackedInline):
     model = CarteirasRegrasNegociacao
-    extra = 1
+    extra = 0
+    min_num = 1
     max_num = 1
-    tab = 1
     fields = ["a_vista", "parcelas", "juros", "multa", "desconto", "entrada_minima", "maximo_parcelas"]
     percentage_fields = ["juros", "multa", "desconto", "entrada_minima"]
     def get_formset(self, request, obj=None, **kwargs):
@@ -633,6 +642,7 @@ class ContratosInline(admin.TabularInline):
     extra = 1
 @admin.register(Carteiras)
 class CarteirasAdmin(ModelAdmin):
+    autocomplete_fields = ['organizacao']
     search_fields = ("id", "nome", "nome_empresa_responsavel")  # add real searchable fields, e.g. "numero"
     exclude = (
         'ativo',
@@ -643,11 +653,22 @@ class CarteirasAdmin(ModelAdmin):
     )
     list_display = (
         'nome',
-        'nome_responsavel',
         'organizacao__cpf_cnpj',
+        'status',
+        'display_qtd_contratos',
+        'display_qtd_devedores',
     )
     #inlines = [ContratosInline]
     inlines = [CarteirasRegrasNegociacaoInline, CarteirasContratosInline]
+    @admin.display(description="Quantidade de Devedores", ordering="")
+    def display_qtd_devedores(self, obj):
+        devedores_ids = set()
+        for obj in Contratos.objects.filter(carteira_id=obj.id):
+            devedores_ids.add(obj.devedor_id)
+        return Devedores.objects.filter(id__in=devedores_ids).count()
+    @admin.display(description="Quantidade de Contratos", ordering="")
+    def display_qtd_contratos(self, obj):
+        return Contratos.objects.filter(carteira_id=obj.id).count()
 
 # class ContratosInline(admin.TabularInline):
 #     model = Contratos

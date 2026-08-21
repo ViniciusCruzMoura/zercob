@@ -15,7 +15,10 @@
                        name="{{ search_var }}"
                        value="{{ cl.query }}"
                        {% if not cl.is_dataset %}id="searchbar"{% endif %}
+                       {% comment %}
                        placeholder="{% if cl.search_help_text %}{{ cl.search_help_text }}{% else %}{% trans "Type to search" %}{% endif %}" />
+                       {% endcomment %}
+                       placeholder="{% if cl.search_help_text %}{{ cl.search_help_text }}{% else %}{% trans "Digite para pesquisar" %}{% endif %}" />
 
                 {% if not cl.is_dataset %}
                     {% include "unfold/helpers/shortcut.html" with shortcut="/" %}
