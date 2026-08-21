@@ -25,6 +25,20 @@ from apps.common.guias import guias_formatar_valor
 from django.urls import path, reverse
 from django.http import JsonResponse
 
+from apps.cobranca.resources.devedor import (
+    DevedoresResource,
+    DevedoresEnderecosResource,
+    DevedoresContatosResource,
+    ContratosParcelasResource,
+)
+from apps.cobranca.resources.devedor import DevedoresCompletoExportResource
+
+# IMPORADORES LAYOUT
+# NOME,CPF/CNPJ;
+# CPF/CNPJ,CEP,LOGRADOURO,BAIRRO,MUNICIPIO,UF;
+# CPF/CNPJ,TIPO,CONTATO,CONFIANÇA;
+# CARTEIRA,CPF/CNPJ,PRODUTO,N° PARCELA,DATA VENCIMENTO, VALOR;
+
 # MOD USER
 admin.site.unregister(User)
 admin.site.unregister(Group)
@@ -86,6 +100,11 @@ class AcordosParcelasInline(TabularInline):
         'usuario_inclusao',
         'usuario_alteracao',
     )
+    currency_fields = ["valor"]
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        admin_model_get_form_widget(formset.form, self, request, obj, **kwargs)
+        return formset
 
 @admin.register(Acordos)
 class AcordosAdmin(ImportExportModelAdmin, ModelAdmin):
@@ -102,13 +121,22 @@ class AcordosAdmin(ImportExportModelAdmin, ModelAdmin):
         "status",
 #         "numero_parcela",
         "data_vencimento",
-        "valor",
+        "display_valor",
+        "modalidade",
     )
+    currency_fields = ["valor"]
 #     inlines = [AcordosPagamentosInline, AcordosParcelasInline]
 #     list_display = (
 #         'devedor__nome_cliente',
 #         'devedor__cpf_cnpj',
 #     )
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        admin_model_get_form_widget(form, self, request, obj, **kwargs)
+        return form
+    @admin.display(description="Valor",ordering="")
+    def display_valor(self, obj):
+        return guias_formatar_valor(obj.valor)
 
 
 # class DevedoresParecelasInline(admin.TabularInline):
@@ -430,6 +458,19 @@ class DevedoresEnderecosInline(TabularInline):
     extra = 1
     exclude = ['latitude', 'longitude']
 class DevedoresAdmin(ImportExportModelAdmin, ModelAdmin):
+    import_form_class = ImportForm
+    export_form_class = ExportForm
+    def get_import_resource_classes(self, request):
+        return [
+            DevedoresResource,
+            DevedoresEnderecosResource,
+            DevedoresContatosResource,
+            ContratosParcelasResource,
+        ]
+    def get_export_resource_classes(self, request):
+        return [
+            DevedoresCompletoExportResource,
+        ]
     model = Devedores
 #     inlines = [DevedoresParecelasInline]
     list_display = (
@@ -495,7 +536,7 @@ class DevedoresAdmin(ImportExportModelAdmin, ModelAdmin):
 class OrganizacaoCarteirasInline(NonrelatedTabularInline):
     model = Carteiras
     extra = 1
-    fields = ["id", "nome", "responsavel", "nome_responsavel", "status", "data_inclusao", "ativo"]
+    fields = ["id", "nome", "status", "data_inclusao", "ativo"]
     per_page = 5
     def has_add_permission(self, request, obj=None):
         return False

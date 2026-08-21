@@ -381,11 +381,11 @@ UNFOLD = {
                         "icon": "request_quote",
                         "link": reverse_lazy("admin:apps_cobranca_propostas_changelist"),
                     },
-                    {
-                        "title": _("Contratos"),
-                        "icon": "contract",
-                        "link": reverse_lazy("admin:apps_cobranca_contratos_changelist"),
-                    },
+#                     {
+#                         "title": _("Contratos"),
+#                         "icon": "contract",
+#                         "link": reverse_lazy("admin:apps_cobranca_contratos_changelist"),
+#                     },
                     {
                         "title": _("Acordos"),
                         "icon": "handshake",

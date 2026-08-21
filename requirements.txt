@@ -50,6 +50,7 @@ diff_match_patch
 # Uma biblioteca de propósito geral para dados tabulares
 # https://tablib.readthedocs.io/en/stable/
 tablib
+openpyxl
 
 # Extensões para o módulo datetime padrão do Python
 # https://dateutil.readthedocs.io/en/stable/

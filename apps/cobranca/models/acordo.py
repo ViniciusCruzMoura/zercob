@@ -209,8 +209,8 @@ class Acordos(models.Model):
         default=A_VISTA,
     )
     valor = models.IntegerField(
-        db_comment="Valor do Boleto",
-        verbose_name="Valor do Boleto",
+        db_comment="Valor",
+        verbose_name="Valor",
         validators=[
             MinValueValidator(0)
         ],

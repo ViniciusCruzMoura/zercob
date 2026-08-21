@@ -6,6 +6,11 @@ from datetime import datetime
 from datetime import date, timedelta
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
+from apps.cobranca.models.carteira import CarteirasRegrasNegociacao
+from apps.cobranca.models.contrato import ContratosParcelas, Contratos
+
+def whatsapp_enviar_mensagem(telefone, mensagem):
+    pass
 
 class PropostasParcelas(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -278,20 +283,69 @@ class Propostas(models.Model):
         if self.status == self.ACEITO:
             print("TODO 202608200044 inserir registro no acordos caso não exista")
 
+            from apps.cobranca.models.acordo import Acordos, AcordosParcelas
+
+            acordo = (
+                Acordos
+                .objects
+                .filter(devedor_id=self.devedor_id)
+                .exclude(status=Acordos.QUEBRADO)
+                .exists()
+            )
+
+            if acordo:
+                return
+
+
+            propostas_parcelas = (
+                PropostasParcelas
+                .objects
+                .filter(proposta_id=self.id)
+                .order_by("numero_parcela", "id")
+            )
+
+            primeira_parcela = propostas_parcelas.first()
+
+            if not primeira_parcela:
+                return
+
+            acordo = Acordos.objects.create(
+                devedor=self.devedor,
+                modalidade=self.modalidade,
+                valor=primeira_parcela.valor,
+                data_vencimento=primeira_parcela.data_vencimento,
+            )
+
+            for proposta_parcela in propostas_parcelas:
+                AcordosParcelas.objects.create(
+                    acordo=acordo,
+                    numero_parcela=proposta_parcela.numero_parcela,
+                    data_vencimento=proposta_parcela.data_vencimento,
+                    valor=proposta_parcela.valor,
+                )
+
     # TODO 202608201522 validar se já existe proposta já aceita
     # se ja existe então não pode ter outro acordo
 
     def validate_entrada(self):
         if self.modalidade == self.PARCELADO:
-            contratos_da_proposta = PropostaContrato.objects.filter(proposta_id=self.id)
-            contrato_da_proposta = contratos_da_proposta.last()
-            contrato = contrato_da_proposta.contrato if contrato_da_proposta else None
+            contrato = Contratos.objects.filter(devedor_id=self.devedor_id).last()
+            if not contrato:
+                raise ValidationError(
+                    f"Devedor não possui contrato cadastrado"
+                )
+
             regras_negociacao = (
                 CarteirasRegrasNegociacao
                 .objects
-                .filter(carteira_id=contrato.carteira.id if contrato else None)
+                .filter(carteira_id=contrato.carteira.id)
                 .last()
             )
+            if not regras_negociacao:
+                raise ValidationError(
+                    f"As regras da carteira não foram configuradas corretamente"
+                )
+
             if self.entrada < regras_negociacao.entrada_minima:
                 raise ValidationError({
                     "entrada": f"A entrada deve ser maior ou igual a entrada minima de {regras_negociacao.entrada_minima}%"
@@ -299,20 +353,27 @@ class Propostas(models.Model):
 
     def validate_qtd_parcelas(self):
         if self.modalidade == self.PARCELADO:
-            contratos_da_proposta = PropostaContrato.objects.filter(proposta_id=self.id)
-            contrato_da_proposta = contratos_da_proposta.last()
-            contrato = contrato_da_proposta.contrato if contrato_da_proposta else None
+            contrato = Contratos.objects.filter(devedor_id=self.devedor_id).last()
+            if not contrato:
+                raise ValidationError(
+                    f"Devedor não possui contrato cadastrado"
+                )
+
             regras_negociacao = (
                 CarteirasRegrasNegociacao
                 .objects
-                .filter(carteira_id=contrato.carteira.id if contrato else None)
+                .filter(carteira_id=contrato.carteira.id)
                 .last()
             )
+            if not regras_negociacao:
+                raise ValidationError(
+                    f"As regras da carteira não foram configuradas corretamente"
+                )
+
             if self.qtd_parcelas > regras_negociacao.maximo_parcelas:
                 raise ValidationError({
                     "qtd_parcelas": f"A quantidade de parcelas deve ser maior ou igual a parcela maxima de {regras_negociacao.maximo_parcelas}"
                 })
-
 
     def clean(self):
         super().clean()
